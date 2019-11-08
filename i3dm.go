@@ -1,7 +1,7 @@
 package tile3d
 
 import (
-	"errors"
+	"encoding/binary"
 	"io"
 
 	"github.com/qmuntal/gltf"
@@ -32,7 +32,7 @@ const (
 
 type I3dmHeader struct {
 	Header
-	Magic                        string
+	Magic                        [4]byte
 	Version                      uint32
 	ByteLength                   uint32
 	FeatureTableJSONByteLength   uint32
@@ -44,59 +44,6 @@ type I3dmHeader struct {
 
 func (h *I3dmHeader) CalcSize() int64 {
 	return 32
-}
-
-func (h *I3dmHeader) Read(r io.Reader) error {
-	b := make([]byte, h.CalcSize())
-	an, err := io.ReadFull(r, b)
-
-	if err != nil || int64(an) != h.CalcSize() {
-		return err
-	}
-	if int64(an) != h.CalcSize() {
-		return errors.New("i3dm header must is 32!")
-	}
-	offset := 0
-	h.Magic = string(b[offset : offset+4])
-	if h.Magic != I3DM_MAGIC {
-		return errors.New("i3dm magic must is i3dm!")
-	}
-	offset += 4
-	h.Version = toUnsignedInt(b[offset:offset+4], littleEndian)
-	offset += 4
-	h.ByteLength = toUnsignedInt(b[offset:offset+4], littleEndian)
-	offset += 4
-	h.FeatureTableJSONByteLength = toUnsignedInt(b[offset:offset+4], littleEndian)
-	offset += 4
-	h.FeatureTableBinaryByteLength = toUnsignedInt(b[offset:offset+4], littleEndian)
-	offset += 4
-	h.BatchTableJSONByteLength = toUnsignedInt(b[offset:offset+4], littleEndian)
-	offset += 4
-	h.BatchTableBinaryByteLength = toUnsignedInt(b[offset:offset+4], littleEndian)
-	offset += 4
-	h.GltfFormat = toUnsignedInt(b[offset:offset+4], littleEndian)
-	return nil
-}
-
-func (h *I3dmHeader) Write(wr io.Writer) error {
-	b := make([]byte, h.CalcSize())
-	offset := 0
-	writeStringFix(b[offset:offset+4], I3DM_MAGIC, 4)
-	offset += 4
-	writeUnsignedInt(b[offset:offset+4], h.Version, littleEndian)
-	offset += 4
-	writeUnsignedInt(b[offset:offset+4], h.ByteLength, littleEndian)
-	offset += 4
-	writeUnsignedInt(b[offset:offset+4], h.FeatureTableJSONByteLength, littleEndian)
-	offset += 4
-	writeUnsignedInt(b[offset:offset+4], h.FeatureTableBinaryByteLength, littleEndian)
-	offset += 4
-	writeUnsignedInt(b[offset:offset+4], h.BatchTableJSONByteLength, littleEndian)
-	offset += 4
-	writeUnsignedInt(b[offset:offset+4], h.BatchTableBinaryByteLength, littleEndian)
-	offset += 4
-	writeUnsignedInt(b[offset:], h.GltfFormat, littleEndian)
-	return nil
 }
 
 func (h *I3dmHeader) GetByteLength() uint32 {
@@ -367,7 +314,8 @@ func (m *I3dm) CalcSize() int64 {
 }
 
 func (m *I3dm) Read(reader io.ReadSeeker) error {
-	if err := m.Header.Read(reader); err != nil {
+	err := binary.Read(reader, littleEndian, &m.Header)
+	if err != nil {
 		return err
 	}
 
@@ -413,7 +361,9 @@ func (m *I3dm) Write(writer io.Writer) error {
 
 	m.Header.ByteLength = uint32(si)
 
-	if err := m.Header.Write(writer); err != nil {
+	err := binary.Write(writer, littleEndian, m.Header)
+
+	if err != nil {
 		return err
 	}
 
