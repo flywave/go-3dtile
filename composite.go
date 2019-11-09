@@ -32,17 +32,17 @@ func (h *CmptHeader) SetTilesLength(n uint32) {
 	h.TilesLength = n
 }
 
-func (h *CmptHeader) GetFeatureTableJSONByteLength() uint32   { return 0 }
-func (h *CmptHeader) GetFeatureTableBinaryByteLength() uint32 { return 0 }
+func (*CmptHeader) GetFeatureTableJSONByteLength() uint32   { return 0 }
+func (*CmptHeader) GetFeatureTableBinaryByteLength() uint32 { return 0 }
 
-func (h *CmptHeader) GetBatchTableJSONByteLength() uint32   { return 0 }
-func (h *CmptHeader) GetBatchTableBinaryByteLength() uint32 { return 0 }
+func (*CmptHeader) GetBatchTableJSONByteLength() uint32   { return 0 }
+func (*CmptHeader) GetBatchTableBinaryByteLength() uint32 { return 0 }
 
-func (h *CmptHeader) SetFeatureTableJSONByteLength(uint32)   {}
-func (h *CmptHeader) SetFeatureTableBinaryByteLength(uint32) {}
+func (*CmptHeader) SetFeatureTableJSONByteLength(uint32)   {}
+func (*CmptHeader) SetFeatureTableBinaryByteLength(uint32) {}
 
-func (h *CmptHeader) SetBatchTableJSONByteLength(uint32)   {}
-func (h *CmptHeader) SetBatchTableBinaryByteLength(uint32) {}
+func (*CmptHeader) SetBatchTableJSONByteLength(uint32)   {}
+func (*CmptHeader) SetBatchTableBinaryByteLength(uint32) {}
 
 type Cmpt struct {
 	Header CmptHeader
