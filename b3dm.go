@@ -17,7 +17,6 @@ const (
 )
 
 type B3dmHeader struct {
-	Header
 	Magic                        [4]byte
 	Version                      uint32
 	ByteLength                   uint32
@@ -81,7 +80,6 @@ func B3dmFeatureTableEncode(header map[string]interface{}, data map[string]inter
 }
 
 type B3dm struct {
-	TileModel
 	Header       B3dmHeader
 	FeatureTable FeatureTable
 	BatchTable   BatchTable

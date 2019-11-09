@@ -35,7 +35,6 @@ const (
 )
 
 type PntsHeader struct {
-	Header
 	Magic                        [4]byte
 	Version                      uint32
 	ByteLength                   uint32
@@ -245,14 +244,13 @@ func PntsFeatureTableEncode(header map[string]interface{}, data map[string]inter
 	return out
 }
 
-type PointCloud struct {
-	TileModel
+type Pnts struct {
 	Header       PntsHeader
 	FeatureTable FeatureTable
 	BatchTable   BatchTable
 }
 
-func (m *PointCloud) SetFeatureTable(view PntsFeatureTableView) {
+func (m *Pnts) SetFeatureTable(view PntsFeatureTableView) {
 	m.FeatureTable.Header[PNTS_PROP_POSITION] = BinaryBodyReference{ComponentType: COMPONENT_TYPE_FLOAT, ContainerType: CONTAINER_TYPE_VEC3}
 	m.FeatureTable.Data[PNTS_PROP_POSITION] = view.Position
 
@@ -340,7 +338,7 @@ func (m *PointCloud) SetFeatureTable(view PntsFeatureTableView) {
 	}
 }
 
-func (m *PointCloud) GetFeatureTableView() PntsFeatureTableView {
+func (m *Pnts) GetFeatureTableView() PntsFeatureTableView {
 	ret := PntsFeatureTableView{}
 
 	if t := m.FeatureTable.Data[PNTS_PROP_POSITION]; t != nil {
@@ -396,23 +394,23 @@ func (m *PointCloud) GetFeatureTableView() PntsFeatureTableView {
 	return ret
 }
 
-func (m *PointCloud) GetHeader() Header {
+func (m *Pnts) GetHeader() Header {
 	return &m.Header
 }
 
-func (m *PointCloud) GetFeatureTable() *FeatureTable {
+func (m *Pnts) GetFeatureTable() *FeatureTable {
 	return &m.FeatureTable
 }
 
-func (m *PointCloud) GetBatchTable() *BatchTable {
+func (m *Pnts) GetBatchTable() *BatchTable {
 	return &m.BatchTable
 }
 
-func (m *PointCloud) CalcSize() int64 {
+func (m *Pnts) CalcSize() int64 {
 	return m.Header.CalcSize() + m.FeatureTable.CalcSize() + m.BatchTable.CalcSize(m.FeatureTable.GetBatchLength())
 }
 
-func (m *PointCloud) Read(reader io.ReadSeeker) error {
+func (m *Pnts) Read(reader io.ReadSeeker) error {
 	err := binary.Read(reader, littleEndian, &m.Header)
 	if err != nil {
 		return err
@@ -431,7 +429,7 @@ func (m *PointCloud) Read(reader io.ReadSeeker) error {
 	return nil
 }
 
-func (m *PointCloud) Write(writer io.Writer) error {
+func (m *Pnts) Write(writer io.Writer) error {
 	si := m.Header.CalcSize() + m.FeatureTable.CalcSize() + m.BatchTable.CalcSize(m.FeatureTable.GetBatchLength())
 
 	m.Header.ByteLength = uint32(si)

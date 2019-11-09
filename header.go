@@ -1,11 +1,7 @@
 package tile3d
 
-import "io"
-
 type Header interface {
 	CalcSize() int64
-	Read(reader io.Reader) error
-	Write(writer io.Writer) error
 
 	GetByteLength() uint32
 
