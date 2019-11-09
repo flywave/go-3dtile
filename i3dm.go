@@ -1,6 +1,7 @@
 package tile3d
 
 import (
+	"bytes"
 	"encoding/binary"
 	"io"
 
@@ -100,11 +101,135 @@ type I3dmFeatureTableView struct {
 }
 
 func I3dmFeatureTableDecode(header map[string]interface{}, buff []byte) map[string]interface{} {
-	return nil
+	ret := make(map[string]interface{})
+	instanceLength := getIntegerScalarFeatureValue(header, buff, I3DM_PROP_INSTANCES_LENGTH)
+	ret[I3DM_PROP_INSTANCES_LENGTH] = instanceLength
+	ret[I3DM_PROP_RTC_CENTER] = getFloatVec3FeatureValue(header, buff, I3DM_PROP_RTC_CENTER)
+	ret[I3DM_PROP_QUANTIZED_VOLUME_OFFSET] = getFloatVec3FeatureValue(header, buff, I3DM_PROP_QUANTIZED_VOLUME_OFFSET)
+	ret[I3DM_PROP_QUANTIZED_VOLUME_SCALE] = getFloatVec3FeatureValue(header, buff, I3DM_PROP_QUANTIZED_VOLUME_SCALE)
+
+	floatArrayValue := getFloatArrayFeatureValue(header, buff, I3DM_PROP_POSITION, int(instanceLength)*3)
+	if floatArrayValue != nil {
+		ret[I3DM_PROP_POSITION] = floatArrayValue
+	}
+	unsignedShortArrayValue := getUnsignedShortArrayFeatureValue(header, buff, I3DM_PROP_POSITION_QUANTIZED, int(instanceLength)*3)
+	if unsignedShortArrayValue != nil {
+		ret[I3DM_PROP_POSITION_QUANTIZED] = unsignedShortArrayValue
+	}
+	floatArrayValue = getFloatArrayFeatureValue(header, buff, I3DM_PROP_NORMAL_UP, int(instanceLength)*3)
+	if floatArrayValue != nil {
+		ret[I3DM_PROP_NORMAL_UP] = floatArrayValue
+	}
+	floatArrayValue = getFloatArrayFeatureValue(header, buff, I3DM_PROP_NORMAL_RIGHT, int(instanceLength)*3)
+	if floatArrayValue != nil {
+		ret[I3DM_PROP_NORMAL_RIGHT] = floatArrayValue
+	}
+	unsignedShortArrayValue = getUnsignedShortArrayFeatureValue(header, buff, I3DM_PROP_NORMAL_UP_OCT32P, int(instanceLength)*2)
+	if unsignedShortArrayValue != nil {
+		ret[I3DM_PROP_NORMAL_UP_OCT32P] = unsignedShortArrayValue
+	}
+	unsignedShortArrayValue = getUnsignedShortArrayFeatureValue(header, buff, I3DM_PROP_NORMAL_RIGHT_OCT32P, int(instanceLength)*2)
+	if unsignedShortArrayValue != nil {
+		ret[I3DM_PROP_NORMAL_RIGHT_OCT32P] = unsignedShortArrayValue
+	}
+	floatArrayValue = getFloatArrayFeatureValue(header, buff, I3DM_PROP_SCALE, int(instanceLength))
+	if floatArrayValue != nil {
+		ret[I3DM_PROP_SCALE] = floatArrayValue
+	}
+	floatArrayValue = getFloatArrayFeatureValue(header, buff, I3DM_PROP_SCALE_NON_UNIFORM, int(instanceLength)*3)
+	if floatArrayValue != nil {
+		ret[I3DM_PROP_SCALE_NON_UNIFORM] = floatArrayValue
+	}
+	unsignedIntArrayValue := getBatchLength(header, buff, int(instanceLength))
+	if unsignedIntArrayValue != nil {
+		ret[I3DM_PROP_BATCH_ID] = unsignedIntArrayValue
+	}
+
+	return ret
 }
 
 func I3dmFeatureTableEncode(header map[string]interface{}, data map[string]interface{}) []byte {
-	return nil
+	var out []byte
+	buf := bytes.NewBuffer(out)
+	offset := 0
+	if t := data[I3DM_PROP_POSITION]; t != nil {
+		dt := t.([][3]float64)
+		binary.Write(buf, littleEndian, dt)
+		header[I3DM_PROP_POSITION] = BinaryBodyReference{ByteOffset: offset, ComponentType: COMPONENT_TYPE_FLOAT, ContainerType: CONTAINER_TYPE_VEC3}
+		offset += (len(dt) * 3 * 8)
+	}
+
+	if t := data[I3DM_PROP_POSITION_QUANTIZED]; t != nil {
+		dt := t.([][3]uint16)
+		binary.Write(buf, littleEndian, t.([][3]uint16))
+		header[I3DM_PROP_POSITION_QUANTIZED] = BinaryBodyReference{ByteOffset: offset, ComponentType: COMPONENT_TYPE_UNSIGNED_SHORT, ContainerType: CONTAINER_TYPE_VEC3}
+		offset += (len(dt) * 3 * 2)
+	}
+
+	if t := data[I3DM_PROP_NORMAL_UP]; t != nil {
+		dt := t.([][3]float32)
+		binary.Write(buf, littleEndian, dt)
+		header[I3DM_PROP_NORMAL_UP] = BinaryBodyReference{ByteOffset: offset, ComponentType: COMPONENT_TYPE_FLOAT, ContainerType: CONTAINER_TYPE_VEC3}
+		offset += (len(dt) * 3 * 4)
+	}
+
+	if t := data[I3DM_PROP_NORMAL_RIGHT]; t != nil {
+		dt := t.([][3]float32)
+		binary.Write(buf, littleEndian, dt)
+		header[I3DM_PROP_NORMAL_RIGHT] = BinaryBodyReference{ByteOffset: offset, ComponentType: COMPONENT_TYPE_FLOAT, ContainerType: CONTAINER_TYPE_VEC3}
+		offset += (len(dt) * 3 * 4)
+	}
+
+	if t := data[I3DM_PROP_NORMAL_UP_OCT32P]; t != nil {
+		dt := t.([][2]uint16)
+		binary.Write(buf, littleEndian, dt)
+		header[I3DM_PROP_NORMAL_UP_OCT32P] = BinaryBodyReference{ByteOffset: offset, ComponentType: COMPONENT_TYPE_UNSIGNED_SHORT, ContainerType: CONTAINER_TYPE_VEC2}
+		offset += (len(dt) * 2 * 2)
+	}
+
+	if t := data[I3DM_PROP_NORMAL_RIGHT_OCT32P]; t != nil {
+		dt := t.([][2]uint16)
+		binary.Write(buf, littleEndian, dt)
+		header[I3DM_PROP_NORMAL_RIGHT_OCT32P] = BinaryBodyReference{ByteOffset: offset, ComponentType: COMPONENT_TYPE_UNSIGNED_SHORT, ContainerType: CONTAINER_TYPE_VEC2}
+		offset += (len(dt) * 2 * 2)
+	}
+
+	if t := data[I3DM_PROP_SCALE]; t != nil {
+		dt := t.([]float32)
+		binary.Write(buf, littleEndian, dt)
+		header[I3DM_PROP_SCALE] = BinaryBodyReference{ByteOffset: offset, ComponentType: COMPONENT_TYPE_FLOAT, ContainerType: CONTAINER_TYPE_SCALAR}
+		offset += (len(dt) * 4)
+	}
+
+	if t := data[I3DM_PROP_SCALE_NON_UNIFORM]; t != nil {
+		dt := t.([][3]float32)
+		binary.Write(buf, littleEndian, dt)
+		header[I3DM_PROP_SCALE_NON_UNIFORM] = BinaryBodyReference{ByteOffset: offset, ComponentType: COMPONENT_TYPE_FLOAT, ContainerType: CONTAINER_TYPE_VEC3}
+		offset += (len(dt) * 3 * 4)
+	}
+
+	if data[I3DM_PROP_BATCH_ID] != nil {
+		switch dt := data[I3DM_PROP_BATCH_ID].(type) {
+		case []uint8:
+			binary.Write(buf, littleEndian, dt)
+			header[PNTS_PROP_BATCH_ID] = BinaryBodyReference{ByteOffset: offset, ComponentType: COMPONENT_TYPE_UNSIGNED_BYTE}
+			offset += len(dt)
+		case []uint16:
+			binary.Write(buf, littleEndian, dt)
+			header[PNTS_PROP_BATCH_ID] = BinaryBodyReference{ByteOffset: offset, ComponentType: COMPONENT_TYPE_UNSIGNED_SHORT}
+			offset += (len(dt) * 2)
+		case []uint32:
+			binary.Write(buf, littleEndian, dt)
+			header[PNTS_PROP_BATCH_ID] = BinaryBodyReference{ByteOffset: offset, ComponentType: COMPONENT_TYPE_UNSIGNED_INT}
+			offset += (len(dt) * 4)
+		}
+	}
+
+	if len(out) != offset {
+		return nil
+	}
+
+	return out
 }
 
 type I3dm struct {
@@ -117,7 +242,7 @@ type I3dm struct {
 }
 
 func (m *I3dm) SetFeatureTable(view I3dmFeatureTableView) {
-	m.FeatureTable.Header[I3DM_PROP_POSITION] = BinaryBodyReference{ComponentType: COMPONENT_TYPE_FLOAT, ContainerType: CONTAINER_TYPE_VEC3}
+	m.FeatureTable.Header[I3DM_PROP_POSITION] = BinaryBodyReference{ComponentType: COMPONENT_TYPE_DOUBLE, ContainerType: CONTAINER_TYPE_VEC3}
 	m.FeatureTable.Data[I3DM_PROP_POSITION] = view.Position
 
 	m.FeatureTable.Header[I3DM_PROP_POSITION_QUANTIZED] = BinaryBodyReference{ComponentType: COMPONENT_TYPE_UNSIGNED_SHORT, ContainerType: CONTAINER_TYPE_VEC3}

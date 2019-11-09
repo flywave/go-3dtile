@@ -61,7 +61,12 @@ func (h *FeatureTable) CalcSize() int64 {
 
 func (h *FeatureTable) GetBatchLength() int {
 	if h.Header["BATCH_LENGTH"] != nil {
-		return h.Header["BATCH_LENGTH"].(int)
+		switch d := h.Header["BATCH_LENGTH"].(type) {
+		case int:
+			return d
+		case float64:
+			return int(d)
+		}
 	}
 	return 0
 }
@@ -78,11 +83,14 @@ func (h *FeatureTable) readData(reader io.ReadSeeker, buffLength int) error {
 
 func (h *FeatureTable) writeData(wr io.Writer) (int, error) {
 	buff := h.encode(h.Header, h.Data)
-	n, err := wr.Write(buff)
-	if err != nil {
-		return 0, err
+	if buff != nil {
+		n, err := wr.Write(buff)
+		if err != nil {
+			return 0, err
+		}
+		return n, nil
 	}
-	return n, nil
+	return 0, nil
 }
 
 func (h *FeatureTable) Read(reader io.ReadSeeker, header Header) error {

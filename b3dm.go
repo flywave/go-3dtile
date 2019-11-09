@@ -73,7 +73,7 @@ type B3dmFeatureTableView struct {
 }
 
 func B3dmFeatureTableDecode(header map[string]interface{}, buff []byte) map[string]interface{} {
-	return nil
+	return make(map[string]interface{})
 }
 
 func B3dmFeatureTableEncode(header map[string]interface{}, data map[string]interface{}) []byte {

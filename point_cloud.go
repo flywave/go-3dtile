@@ -1,6 +1,7 @@
 package tile3d
 
 import (
+	"bytes"
 	"encoding/binary"
 	"io"
 )
@@ -102,11 +103,146 @@ type PntsFeatureTableView struct {
 }
 
 func PntsFeatureTableDecode(header map[string]interface{}, buff []byte) map[string]interface{} {
-	return nil
+	ret := make(map[string]interface{})
+	pointsLength := getIntegerScalarFeatureValue(header, buff, PNTS_PROP_POSITION_LENGTH)
+	ret[PNTS_PROP_POSITION_LENGTH] = pointsLength
+	ret[PNTS_PROP_BATCH_LENGTH] = getFloatVec3FeatureValue(header, buff, PNTS_PROP_BATCH_LENGTH)
+	ret[PNTS_PROP_QUANTIZED_VOLUME_OFFSET] = getFloatVec3FeatureValue(header, buff, PNTS_PROP_QUANTIZED_VOLUME_OFFSET)
+	ret[PNTS_PROP_QUANTIZED_VOLUME_SCALE] = getFloatVec3FeatureValue(header, buff, PNTS_PROP_QUANTIZED_VOLUME_SCALE)
+	constantRgba := getUnsignedByteArrayFeatureValue(header, buff, PNTS_PROP_CONSTANT_RGBA, 4)
+	if constantRgba != nil {
+		ret[PNTS_PROP_CONSTANT_RGBA] = constantRgba
+	}
+
+	floatArrayValue := getFloatArrayFeatureValue(header, buff, I3DM_PROP_POSITION, int(pointsLength*3))
+	if floatArrayValue != nil {
+		ret[I3DM_PROP_POSITION] = floatArrayValue
+	}
+	unsignedShortArrayValue := getUnsignedShortArrayFeatureValue(header, buff, I3DM_PROP_POSITION_QUANTIZED, int(pointsLength*3))
+	if unsignedShortArrayValue != nil {
+		ret[I3DM_PROP_POSITION_QUANTIZED] = unsignedShortArrayValue
+	}
+
+	reference := getBinaryBodyReference(header, PNTS_PROP_RGBA)
+	if reference != nil {
+		buf := bytes.NewBuffer(buff[reference.ByteOffset:])
+		r := make([][4]byte, pointsLength)
+		err := binary.Read(buf, littleEndian, r)
+		if err != nil {
+			return nil
+		}
+		ret[PNTS_PROP_RGBA] = r
+	} else {
+		reference = getBinaryBodyReference(header, PNTS_PROP_RGB)
+		if reference != nil {
+			buf := bytes.NewBuffer(buff[reference.ByteOffset:])
+			r := make([][3]byte, pointsLength)
+			err := binary.Read(buf, littleEndian, r)
+			if err != nil {
+				return nil
+			}
+			ret[PNTS_PROP_RGB] = r
+		} else {
+			reference = getBinaryBodyReference(header, PNTS_PROP_RGB565)
+			if reference != nil {
+				buf := bytes.NewBuffer(buff[reference.ByteOffset:])
+				r := make([]uint16, pointsLength)
+				err := binary.Read(buf, littleEndian, r)
+				if err != nil {
+					return nil
+				}
+				ret[PNTS_PROP_RGB565] = r
+			}
+		}
+	}
+
+	floatArrayValue = getFloatArrayFeatureValue(header, buff, PNTS_PROP_NORMAL, int(pointsLength*3))
+	if floatArrayValue != nil {
+		ret[PNTS_PROP_NORMAL] = floatArrayValue
+	}
+	byteArrayValue := getUnsignedByteArrayFeatureValue(header, buff, PNTS_PROP_NORMAL_OCT32P, int(pointsLength*2))
+	if byteArrayValue != nil {
+		ret[PNTS_PROP_NORMAL_OCT32P] = floatArrayValue
+	}
+	unsignedIntArrayValue := getBatchLength(header, buff, int(pointsLength))
+	if unsignedIntArrayValue != nil {
+		ret[PNTS_PROP_BATCH_ID] = unsignedIntArrayValue
+	}
+	return ret
 }
 
 func PntsFeatureTableEncode(header map[string]interface{}, data map[string]interface{}) []byte {
-	return nil
+	var out []byte
+	buf := bytes.NewBuffer(out)
+	offset := 0
+
+	if t := data[PNTS_PROP_POSITION]; t != nil {
+		dt := t.([][3]float64)
+		binary.Write(buf, littleEndian, dt)
+		header[PNTS_PROP_POSITION] = BinaryBodyReference{ByteOffset: offset, ComponentType: COMPONENT_TYPE_DOUBLE, ContainerType: CONTAINER_TYPE_VEC3}
+		offset += (len(dt) * 3 * 8)
+	}
+
+	if t := data[PNTS_PROP_POSITION_QUANTIZED]; t != nil {
+		dt := t.([][3]uint16)
+		binary.Write(buf, littleEndian, dt)
+		header[PNTS_PROP_POSITION_QUANTIZED] = BinaryBodyReference{ByteOffset: offset, ComponentType: COMPONENT_TYPE_UNSIGNED_SHORT, ContainerType: CONTAINER_TYPE_VEC3}
+		offset += (len(dt) * 3 * 2)
+	}
+
+	if t := data[PNTS_PROP_RGBA]; t != nil {
+		dt := t.([][4]uint8)
+		binary.Write(buf, littleEndian, dt)
+		header[PNTS_PROP_RGBA] = BinaryBodyReference{ByteOffset: offset, ComponentType: COMPONENT_TYPE_UNSIGNED_BYTE, ContainerType: CONTAINER_TYPE_VEC4}
+		offset += (len(dt) * 4)
+	}
+
+	if t := data[PNTS_PROP_RGB]; t != nil {
+		dt := t.([][3]uint8)
+		binary.Write(buf, littleEndian, dt)
+		header[PNTS_PROP_RGB] = BinaryBodyReference{ByteOffset: offset, ComponentType: COMPONENT_TYPE_UNSIGNED_BYTE, ContainerType: CONTAINER_TYPE_VEC3}
+		offset += (len(dt) * 3)
+	}
+
+	if t := data[PNTS_PROP_RGB565]; t != nil {
+		dt := t.([]uint16)
+		binary.Write(buf, littleEndian, dt)
+		header[PNTS_PROP_RGB565] = BinaryBodyReference{ByteOffset: offset, ComponentType: COMPONENT_TYPE_UNSIGNED_SHORT, ContainerType: CONTAINER_TYPE_SCALAR}
+		offset += (len(dt) * 2)
+	}
+
+	if t := data[PNTS_PROP_NORMAL]; t != nil {
+		dt := t.([][3]float32)
+		binary.Write(buf, littleEndian, dt)
+		header[PNTS_PROP_NORMAL] = BinaryBodyReference{ByteOffset: offset, ComponentType: COMPONENT_TYPE_FLOAT, ContainerType: CONTAINER_TYPE_VEC3}
+		offset += (len(dt) * 3 * 4)
+	}
+
+	if t := data[PNTS_PROP_NORMAL_OCT32P]; t != nil {
+		dt := t.([][2]uint8)
+		binary.Write(buf, littleEndian, dt)
+		header[PNTS_PROP_NORMAL_OCT32P] = BinaryBodyReference{ByteOffset: offset, ComponentType: COMPONENT_TYPE_UNSIGNED_BYTE, ContainerType: CONTAINER_TYPE_VEC2}
+		offset += (len(dt) * 2)
+	}
+
+	if data[PNTS_PROP_BATCH_ID] != nil {
+		switch dt := data[I3DM_PROP_BATCH_ID].(type) {
+		case []uint8:
+			binary.Write(buf, littleEndian, dt)
+			header[PNTS_PROP_BATCH_ID] = BinaryBodyReference{ByteOffset: offset, ComponentType: COMPONENT_TYPE_UNSIGNED_BYTE}
+			offset += len(dt)
+		case []uint16:
+			binary.Write(buf, littleEndian, dt)
+			header[PNTS_PROP_BATCH_ID] = BinaryBodyReference{ByteOffset: offset, ComponentType: COMPONENT_TYPE_UNSIGNED_SHORT}
+			offset += (len(dt) * 2)
+		case []uint32:
+			binary.Write(buf, littleEndian, dt)
+			header[PNTS_PROP_BATCH_ID] = BinaryBodyReference{ByteOffset: offset, ComponentType: COMPONENT_TYPE_UNSIGNED_INT}
+			offset += (len(dt) * 4)
+		}
+	}
+
+	return out
 }
 
 type PointCloud struct {
