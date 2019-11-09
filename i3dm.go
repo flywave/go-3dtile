@@ -99,7 +99,7 @@ type I3dmFeatureTableView struct {
 	EastNorthUp           *bool
 }
 
-func I3dmFeatureTableConvert(header map[string]interface{}, buff []byte) map[string][]interface{} {
+func I3dmFeatureTableConvert(header map[string]interface{}, buff []byte) map[string]interface{} {
 	return nil
 }
 
@@ -114,89 +114,75 @@ type I3dm struct {
 
 func (m *I3dm) SetFeatureTable(view I3dmFeatureTableView) {
 	m.FeatureTable.Header[I3DM_PROP_POSITION] = BinaryBodyReference{ComponentType: COMPONENT_TYPE_FLOAT, ContainerType: CONTAINER_TYPE_VEC3}
-	for i := range view.Position {
-		m.FeatureTable.Data[I3DM_PROP_POSITION] = append(m.FeatureTable.Data[I3DM_PROP_POSITION], view.Position[i])
-	}
+	m.FeatureTable.Data[I3DM_PROP_POSITION] = view.Position
 
 	m.FeatureTable.Header[I3DM_PROP_POSITION_QUANTIZED] = BinaryBodyReference{ComponentType: COMPONENT_TYPE_UNSIGNED_SHORT, ContainerType: CONTAINER_TYPE_VEC3}
-	for i := range view.PositionQuantized {
-		m.FeatureTable.Data[I3DM_PROP_POSITION_QUANTIZED] = append(m.FeatureTable.Data[I3DM_PROP_POSITION_QUANTIZED], view.PositionQuantized[i])
-	}
+	m.FeatureTable.Data[I3DM_PROP_POSITION_QUANTIZED] = view.PositionQuantized
 
 	if view.NormalUp != nil {
 		m.FeatureTable.Header[I3DM_PROP_NORMAL_UP] = BinaryBodyReference{ComponentType: COMPONENT_TYPE_FLOAT, ContainerType: CONTAINER_TYPE_VEC3}
-		for i := range view.NormalUp {
-			m.FeatureTable.Data[I3DM_PROP_NORMAL_UP] = append(m.FeatureTable.Data[I3DM_PROP_NORMAL_UP], view.NormalUp[i])
-		}
+		m.FeatureTable.Data[I3DM_PROP_NORMAL_UP] = view.NormalUp
 	}
 
 	if view.NormalRight != nil {
 		m.FeatureTable.Header[I3DM_PROP_NORMAL_RIGHT] = BinaryBodyReference{ComponentType: COMPONENT_TYPE_FLOAT, ContainerType: CONTAINER_TYPE_VEC3}
-		for i := range view.NormalRight {
-			m.FeatureTable.Data[I3DM_PROP_NORMAL_RIGHT] = append(m.FeatureTable.Data[I3DM_PROP_NORMAL_RIGHT], view.NormalRight[i])
-		}
+		m.FeatureTable.Data[I3DM_PROP_NORMAL_UP] = view.NormalRight
 	}
 
 	if view.NormalUpOCT16P != nil {
 		m.FeatureTable.Header[I3DM_PROP_NORMAL_UP_OCT32P] = BinaryBodyReference{ComponentType: COMPONENT_TYPE_UNSIGNED_SHORT, ContainerType: CONTAINER_TYPE_VEC3}
-		for i := range view.NormalUpOCT16P {
-			m.FeatureTable.Data[I3DM_PROP_NORMAL_UP_OCT32P] = append(m.FeatureTable.Data[I3DM_PROP_NORMAL_UP_OCT32P], view.NormalUpOCT16P[i])
-		}
+		m.FeatureTable.Data[I3DM_PROP_NORMAL_UP_OCT32P] = view.NormalUpOCT16P
 	}
 
 	if view.NormalRightOCT16P != nil {
 		m.FeatureTable.Header[I3DM_PROP_NORMAL_RIGHT_OCT32P] = BinaryBodyReference{ComponentType: COMPONENT_TYPE_UNSIGNED_SHORT, ContainerType: CONTAINER_TYPE_VEC3}
-		for i := range view.NormalRightOCT16P {
-			m.FeatureTable.Data[I3DM_PROP_NORMAL_RIGHT_OCT32P] = append(m.FeatureTable.Data[I3DM_PROP_NORMAL_RIGHT_OCT32P], view.NormalRightOCT16P[i])
-		}
+		m.FeatureTable.Data[I3DM_PROP_NORMAL_RIGHT_OCT32P] = view.NormalRightOCT16P
 	}
 
 	if view.Scale != nil {
 		m.FeatureTable.Header[I3DM_PROP_SCALE] = BinaryBodyReference{ComponentType: COMPONENT_TYPE_FLOAT, ContainerType: CONTAINER_TYPE_SCALAR}
-		m.FeatureTable.Data[I3DM_PROP_SCALE] = append(m.FeatureTable.Data[I3DM_PROP_SCALE], view.Scale)
+		m.FeatureTable.Data[I3DM_PROP_SCALE] = view.Scale
 	}
 
 	if view.ScaleNONUniform != nil {
 		m.FeatureTable.Header[I3DM_PROP_SCALE_NON_UNIFORM] = BinaryBodyReference{ComponentType: COMPONENT_TYPE_FLOAT, ContainerType: CONTAINER_TYPE_VEC3}
-		for i := range view.ScaleNONUniform {
-			m.FeatureTable.Data[I3DM_PROP_SCALE_NON_UNIFORM] = append(m.FeatureTable.Data[I3DM_PROP_SCALE_NON_UNIFORM], view.ScaleNONUniform[i])
-		}
+		m.FeatureTable.Data[I3DM_PROP_SCALE_NON_UNIFORM] = view.ScaleNONUniform
 	}
 
 	if view.BatchId != nil {
 		switch t := view.BatchId.(type) {
 		case []uint8:
 			m.FeatureTable.Header[I3DM_PROP_BATCH_ID] = BinaryBodyReference{ComponentType: COMPONENT_TYPE_UNSIGNED_BYTE, ContainerType: CONTAINER_TYPE_SCALAR}
-			for i := range t {
-				m.FeatureTable.Data[I3DM_PROP_BATCH_ID] = append(m.FeatureTable.Data[I3DM_PROP_BATCH_ID], t[i])
-			}
+			m.FeatureTable.Data[I3DM_PROP_BATCH_ID] = t
 		case []uint16:
 			m.FeatureTable.Header[I3DM_PROP_BATCH_ID] = BinaryBodyReference{ComponentType: COMPONENT_TYPE_UNSIGNED_SHORT, ContainerType: CONTAINER_TYPE_SCALAR}
-			for i := range t {
-				m.FeatureTable.Data[I3DM_PROP_BATCH_ID] = append(m.FeatureTable.Data[I3DM_PROP_BATCH_ID], t[i])
-			}
+			m.FeatureTable.Data[I3DM_PROP_BATCH_ID] = t
 		case []uint32:
 			m.FeatureTable.Header[I3DM_PROP_BATCH_ID] = BinaryBodyReference{ComponentType: COMPONENT_TYPE_UNSIGNED_INT, ContainerType: CONTAINER_TYPE_SCALAR}
-			for i := range t {
-				m.FeatureTable.Data[I3DM_PROP_BATCH_ID] = append(m.FeatureTable.Data[I3DM_PROP_BATCH_ID], t[i])
-			}
+			m.FeatureTable.Data[I3DM_PROP_BATCH_ID] = t
 		case []int64:
 			max := maxBatchId(t)
 			if max > 0xFFFF {
 				m.FeatureTable.Header[I3DM_PROP_BATCH_ID] = BinaryBodyReference{ComponentType: COMPONENT_TYPE_UNSIGNED_INT, ContainerType: CONTAINER_TYPE_SCALAR}
-				for i := range t {
-					m.FeatureTable.Data[I3DM_PROP_BATCH_ID] = append(m.FeatureTable.Data[I3DM_PROP_BATCH_ID], uint32(t[i]))
+				out := make([]uint32, len(t))
+				for i := range out {
+					out[i] = uint32(t[i])
 				}
+				m.FeatureTable.Data[I3DM_PROP_BATCH_ID] = out
 			} else if max > 0xFF {
 				m.FeatureTable.Header[I3DM_PROP_BATCH_ID] = BinaryBodyReference{ComponentType: COMPONENT_TYPE_UNSIGNED_SHORT, ContainerType: CONTAINER_TYPE_SCALAR}
-				for i := range t {
-					m.FeatureTable.Data[I3DM_PROP_BATCH_ID] = append(m.FeatureTable.Data[I3DM_PROP_BATCH_ID], uint16(t[i]))
+				out := make([]uint16, len(t))
+				for i := range out {
+					out[i] = uint16(t[i])
 				}
+				m.FeatureTable.Data[I3DM_PROP_BATCH_ID] = out
 			} else {
 				m.FeatureTable.Header[I3DM_PROP_BATCH_ID] = BinaryBodyReference{ComponentType: COMPONENT_TYPE_UNSIGNED_BYTE, ContainerType: CONTAINER_TYPE_SCALAR}
-				for i := range t {
-					m.FeatureTable.Data[I3DM_PROP_BATCH_ID] = append(m.FeatureTable.Data[I3DM_PROP_BATCH_ID], uint8(t[i]))
+				out := make([]uint8, len(t))
+				for i := range out {
+					out[i] = uint8(t[i])
 				}
+				m.FeatureTable.Data[I3DM_PROP_BATCH_ID] = out
 			}
 		}
 	}
@@ -218,48 +204,37 @@ func (m *I3dm) SetFeatureTable(view I3dmFeatureTableView) {
 
 func (m *I3dm) GetFeatureTableView() I3dmFeatureTableView {
 	ret := I3dmFeatureTableView{}
-	for i := range m.FeatureTable.Data[I3DM_PROP_POSITION] {
-		ret.Position = append(ret.Position, m.FeatureTable.Data[I3DM_PROP_POSITION][i].([3]float64))
+
+	if t := m.FeatureTable.Data[I3DM_PROP_POSITION]; t != nil {
+		ret.Position = t.([][3]float64)
 	}
 
-	for i := range m.FeatureTable.Data[I3DM_PROP_POSITION_QUANTIZED] {
-		ret.PositionQuantized = append(ret.PositionQuantized, m.FeatureTable.Data[I3DM_PROP_POSITION_QUANTIZED][i].([3]uint16))
+	if t := m.FeatureTable.Data[I3DM_PROP_POSITION_QUANTIZED]; t != nil {
+		ret.PositionQuantized = t.([][3]uint16)
 	}
 
-	if m.FeatureTable.Data[I3DM_PROP_NORMAL_UP] != nil {
-		for i := range m.FeatureTable.Data[I3DM_PROP_NORMAL_UP] {
-			ret.NormalUp = append(ret.NormalUp, m.FeatureTable.Data[I3DM_PROP_NORMAL_UP][i].([3]float32))
-		}
+	if t := m.FeatureTable.Data[I3DM_PROP_NORMAL_UP]; t != nil {
+		ret.NormalUp = t.([][3]float32)
 	}
 
-	if m.FeatureTable.Data[I3DM_PROP_NORMAL_RIGHT] != nil {
-		for i := range m.FeatureTable.Data[I3DM_PROP_NORMAL_RIGHT] {
-			ret.NormalRight = append(ret.NormalRight, m.FeatureTable.Data[I3DM_PROP_NORMAL_RIGHT][i].([3]float32))
-		}
+	if t := m.FeatureTable.Data[I3DM_PROP_NORMAL_RIGHT]; t != nil {
+		ret.NormalRight = t.([][3]float32)
 	}
 
-	if m.FeatureTable.Data[I3DM_PROP_NORMAL_UP_OCT32P] != nil {
-		for i := range m.FeatureTable.Data[I3DM_PROP_NORMAL_UP_OCT32P] {
-			ret.NormalUpOCT16P = append(ret.NormalUpOCT16P, m.FeatureTable.Data[I3DM_PROP_NORMAL_UP_OCT32P][i].([2]uint16))
-		}
+	if t := m.FeatureTable.Data[I3DM_PROP_NORMAL_UP_OCT32P]; t != nil {
+		ret.NormalUpOCT16P = t.([][2]uint16)
 	}
 
-	if m.FeatureTable.Data[I3DM_PROP_NORMAL_RIGHT_OCT32P] != nil {
-		for i := range m.FeatureTable.Data[I3DM_PROP_NORMAL_RIGHT_OCT32P] {
-			ret.NormalRightOCT16P = append(ret.NormalRightOCT16P, m.FeatureTable.Data[I3DM_PROP_NORMAL_RIGHT_OCT32P][i].([2]uint16))
-		}
+	if t := m.FeatureTable.Data[I3DM_PROP_NORMAL_RIGHT_OCT32P]; t != nil {
+		ret.NormalRightOCT16P = t.([][2]uint16)
 	}
 
-	if m.FeatureTable.Data[I3DM_PROP_SCALE] != nil {
-		for i := range m.FeatureTable.Data[I3DM_PROP_SCALE] {
-			ret.Scale = m.FeatureTable.Data[I3DM_PROP_SCALE][i].([]float32)
-		}
+	if t := m.FeatureTable.Data[I3DM_PROP_SCALE]; t != nil {
+		ret.Scale = t.([]float32)
 	}
 
-	if m.FeatureTable.Data[I3DM_PROP_SCALE_NON_UNIFORM] != nil {
-		for i := range m.FeatureTable.Data[I3DM_PROP_SCALE_NON_UNIFORM] {
-			ret.ScaleNONUniform = append(ret.ScaleNONUniform, m.FeatureTable.Data[I3DM_PROP_SCALE_NON_UNIFORM][i].([3]float32))
-		}
+	if t := m.FeatureTable.Data[I3DM_PROP_SCALE_NON_UNIFORM]; t != nil {
+		ret.ScaleNONUniform = t.([][3]float32)
 	}
 
 	if m.FeatureTable.Data[I3DM_PROP_BATCH_ID] != nil {
@@ -283,13 +258,12 @@ func (m *I3dm) GetFeatureTableView() I3dmFeatureTableView {
 	if m.FeatureTable.Header[I3DM_PROP_EAST_NORTH_UP] != nil {
 		b := m.FeatureTable.Header[I3DM_PROP_EAST_NORTH_UP].(bool)
 		ret.EastNorthUp = &b
-
 	}
 	return ret
 }
 
-func (m *I3dm) GetHeader() *Header {
-	return &m.Header.Header
+func (m *I3dm) GetHeader() Header {
+	return &m.Header
 }
 
 func (m *I3dm) GetFeatureTable() *FeatureTable {
@@ -319,12 +293,12 @@ func (m *I3dm) Read(reader io.ReadSeeker) error {
 		return err
 	}
 
-	if err := m.FeatureTable.Read(reader, *m.GetHeader()); err != nil {
+	if err := m.FeatureTable.Read(reader, m.GetHeader()); err != nil {
 		return err
 	}
 
 	//TODO batchLength
-	if err := m.BatchTable.Read(reader, *m.GetHeader(), 0); err != nil {
+	if err := m.BatchTable.Read(reader, m.GetHeader(), 0); err != nil {
 		return err
 	}
 

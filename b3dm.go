@@ -72,7 +72,7 @@ type B3dmFeatureTableView struct {
 	RtcCenter   []float64
 }
 
-func B3dmFeatureTableConvert(header map[string]interface{}, buff []byte) map[string][]interface{} {
+func B3dmFeatureTableConvert(header map[string]interface{}, buff []byte) map[string]interface{} {
 	return nil
 }
 
@@ -100,8 +100,8 @@ func (m *B3dm) GetFeatureTableView() B3dmFeatureTableView {
 	return ret
 }
 
-func (m *B3dm) GetHeader() *Header {
-	return &m.Header.Header
+func (m *B3dm) GetHeader() Header {
+	return &m.Header
 }
 
 func (m *B3dm) GetFeatureTable() *FeatureTable {
@@ -123,12 +123,12 @@ func (m *B3dm) Read(reader io.ReadSeeker) error {
 		return err
 	}
 
-	if err := m.FeatureTable.Read(reader, *m.GetHeader()); err != nil {
+	if err := m.FeatureTable.Read(reader, m.GetHeader()); err != nil {
 		return err
 	}
 
 	//TODO batchLength
-	if err := m.BatchTable.Read(reader, *m.GetHeader(), 0); err != nil {
+	if err := m.BatchTable.Read(reader, m.GetHeader(), 0); err != nil {
 		return err
 	}
 

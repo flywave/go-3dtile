@@ -8,7 +8,7 @@ import (
 
 type BatchTable struct {
 	Header map[string]interface{}
-	Data   map[string][]interface{}
+	Data   map[string]interface{}
 }
 
 func transformBinaryBodyReference(m map[string]interface{}) map[string]interface{} {
@@ -28,7 +28,7 @@ func transformBinaryBodyReference(m map[string]interface{}) map[string]interface
 
 func (t *BatchTable) readJSONHeader(data io.Reader) error {
 	dec := json.NewDecoder(data)
-	if err := dec.Decode(t.Header); err != nil {
+	if err := dec.Decode(&t.Header); err != nil {
 		return err
 	}
 	t.Header = transformBinaryBodyReference(t.Header)
@@ -67,7 +67,45 @@ func (h *BatchTable) CalcSize() int64 {
 }
 
 func (h *BatchTable) GetProperty(property string, batchId int) interface{} {
-	return h.Data[property][batchId]
+	ret := h.Data[property]
+	if ret == nil {
+		return nil
+	}
+	switch t := h.Data[property].(type) {
+	case byte:
+		return t
+	case []byte:
+		return t
+	case int8:
+		return t
+	case []int8:
+		return t
+	case int16:
+		return t
+	case []int16:
+		return t
+	case uint16:
+		return t
+	case []uint16:
+		return t
+	case int32:
+		return t
+	case []int32:
+		return t
+	case uint32:
+		return t
+	case []uint32:
+		return t
+	case float32:
+		return t
+	case []float32:
+		return t
+	case float64:
+		return t
+	case []float64:
+		return t
+	}
+	return nil
 }
 
 func (h *BatchTable) Read(reader io.ReadSeeker, header Header, batchLength int) error {
@@ -102,7 +140,7 @@ func (h *BatchTable) Read(reader io.ReadSeeker, header Header, batchLength int) 
 	return nil
 }
 
-func (h *BatchTable) Write(writer io.Writer, header *Header) error {
+func (h *BatchTable) Write(writer io.Writer, header Header) error {
 	outJSONHeader := make(map[string]interface{})
 	var outBinaryBytes [][]byte
 	var JSONLenght int
@@ -138,8 +176,8 @@ func (h *BatchTable) Write(writer io.Writer, header *Header) error {
 		}
 	}
 
-	(*header).SetBatchTableJSONByteLength(uint32(JSONLenght))
-	(*header).SetBatchTableBinaryByteLength(uint32(BinaryLenght))
+	header.SetBatchTableJSONByteLength(uint32(JSONLenght))
+	header.SetBatchTableBinaryByteLength(uint32(BinaryLenght))
 
 	return nil
 }

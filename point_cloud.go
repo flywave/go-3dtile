@@ -101,7 +101,7 @@ type PntsFeatureTableView struct {
 	BatchLength           *uint32
 }
 
-func PntsFeatureTableConvert(header map[string]interface{}, buff []byte) map[string][]interface{} {
+func PntsFeatureTableConvert(header map[string]interface{}, buff []byte) map[string]interface{} {
 	return nil
 }
 
@@ -114,82 +114,70 @@ type PointCloud struct {
 
 func (m *PointCloud) SetFeatureTable(view PntsFeatureTableView) {
 	m.FeatureTable.Header[PNTS_PROP_POSITION] = BinaryBodyReference{ComponentType: COMPONENT_TYPE_FLOAT, ContainerType: CONTAINER_TYPE_VEC3}
-	for i := range view.Position {
-		m.FeatureTable.Data[PNTS_PROP_POSITION] = append(m.FeatureTable.Data[PNTS_PROP_POSITION], view.Position[i])
-	}
+	m.FeatureTable.Data[PNTS_PROP_POSITION] = view.Position
 
 	m.FeatureTable.Header[PNTS_PROP_POSITION_QUANTIZED] = BinaryBodyReference{ComponentType: COMPONENT_TYPE_UNSIGNED_SHORT, ContainerType: CONTAINER_TYPE_VEC3}
-	for i := range view.PositionQuantized {
-		m.FeatureTable.Data[PNTS_PROP_POSITION_QUANTIZED] = append(m.FeatureTable.Data[PNTS_PROP_POSITION_QUANTIZED], view.PositionQuantized[i])
-	}
+	m.FeatureTable.Data[PNTS_PROP_POSITION_QUANTIZED] = view.PositionQuantized
 
 	if view.RGBA != nil {
 		m.FeatureTable.Header[PNTS_PROP_RGBA] = BinaryBodyReference{ComponentType: COMPONENT_TYPE_UNSIGNED_BYTE, ContainerType: CONTAINER_TYPE_VEC4}
-		for i := range view.RGBA {
-			m.FeatureTable.Data[PNTS_PROP_RGBA] = append(m.FeatureTable.Data[PNTS_PROP_RGBA], view.RGBA[i])
-		}
+		m.FeatureTable.Data[PNTS_PROP_RGBA] = view.RGBA
 	}
 
 	if view.RGB != nil {
 		m.FeatureTable.Header[PNTS_PROP_RGB] = BinaryBodyReference{ComponentType: COMPONENT_TYPE_UNSIGNED_BYTE, ContainerType: CONTAINER_TYPE_VEC3}
-		for i := range view.RGB {
-			m.FeatureTable.Data[PNTS_PROP_RGB] = append(m.FeatureTable.Data[PNTS_PROP_RGB], view.RGB[i])
-		}
+		m.FeatureTable.Data[PNTS_PROP_RGB] = view.RGB
 	}
 
 	if view.RGB565 != nil {
 		m.FeatureTable.Header[PNTS_PROP_RGB565] = BinaryBodyReference{ComponentType: COMPONENT_TYPE_UNSIGNED_SHORT, ContainerType: CONTAINER_TYPE_SCALAR}
-		m.FeatureTable.Data[PNTS_PROP_RGB565] = append(m.FeatureTable.Data[PNTS_PROP_RGB565], view.RGB565)
+		m.FeatureTable.Data[PNTS_PROP_RGB565] = view.RGB565
 	}
 
 	if view.Normal != nil {
 		m.FeatureTable.Header[PNTS_PROP_NORMAL] = BinaryBodyReference{ComponentType: COMPONENT_TYPE_FLOAT, ContainerType: CONTAINER_TYPE_VEC3}
-		for i := range view.Normal {
-			m.FeatureTable.Data[PNTS_PROP_NORMAL] = append(m.FeatureTable.Data[PNTS_PROP_NORMAL], view.Normal[i])
-		}
+		m.FeatureTable.Data[PNTS_PROP_NORMAL] = view.Normal
 	}
 
 	if view.NormalOCT16P != nil {
 		m.FeatureTable.Header[PNTS_PROP_NORMAL_OCT32P] = BinaryBodyReference{ComponentType: COMPONENT_TYPE_UNSIGNED_BYTE, ContainerType: CONTAINER_TYPE_VEC2}
-		for i := range view.NormalOCT16P {
-			m.FeatureTable.Data[PNTS_PROP_NORMAL_OCT32P] = append(m.FeatureTable.Data[PNTS_PROP_NORMAL_OCT32P], view.NormalOCT16P[i])
-		}
+		m.FeatureTable.Data[PNTS_PROP_NORMAL_OCT32P] = view.NormalOCT16P
 	}
 
 	if view.BatchId != nil {
 		switch t := view.BatchId.(type) {
 		case []uint8:
 			m.FeatureTable.Header[PNTS_PROP_BATCH_ID] = BinaryBodyReference{ComponentType: COMPONENT_TYPE_UNSIGNED_BYTE, ContainerType: CONTAINER_TYPE_SCALAR}
-			for i := range t {
-				m.FeatureTable.Data[PNTS_PROP_BATCH_ID] = append(m.FeatureTable.Data[PNTS_PROP_BATCH_ID], t[i])
-			}
+			m.FeatureTable.Header[PNTS_PROP_BATCH_ID] = t
 		case []uint16:
 			m.FeatureTable.Header[PNTS_PROP_BATCH_ID] = BinaryBodyReference{ComponentType: COMPONENT_TYPE_UNSIGNED_SHORT, ContainerType: CONTAINER_TYPE_SCALAR}
-			for i := range t {
-				m.FeatureTable.Data[PNTS_PROP_BATCH_ID] = append(m.FeatureTable.Data[PNTS_PROP_BATCH_ID], t[i])
-			}
+			m.FeatureTable.Header[PNTS_PROP_BATCH_ID] = t
 		case []uint32:
 			m.FeatureTable.Header[PNTS_PROP_BATCH_ID] = BinaryBodyReference{ComponentType: COMPONENT_TYPE_UNSIGNED_INT, ContainerType: CONTAINER_TYPE_SCALAR}
-			for i := range t {
-				m.FeatureTable.Data[PNTS_PROP_BATCH_ID] = append(m.FeatureTable.Data[PNTS_PROP_BATCH_ID], t[i])
-			}
+			m.FeatureTable.Header[PNTS_PROP_BATCH_ID] = t
 		case []int64:
 			max := maxBatchId(t)
 			if max > 0xFFFF {
-				m.FeatureTable.Header[I3DM_PROP_BATCH_ID] = BinaryBodyReference{ComponentType: COMPONENT_TYPE_UNSIGNED_INT, ContainerType: CONTAINER_TYPE_SCALAR}
-				for i := range t {
-					m.FeatureTable.Data[I3DM_PROP_BATCH_ID] = append(m.FeatureTable.Data[I3DM_PROP_BATCH_ID], uint32(t[i]))
+				m.FeatureTable.Header[PNTS_PROP_BATCH_ID] = BinaryBodyReference{ComponentType: COMPONENT_TYPE_UNSIGNED_INT, ContainerType: CONTAINER_TYPE_SCALAR}
+				out := make([]uint32, len(t))
+				for i := range out {
+					out[i] = uint32(t[i])
 				}
+				m.FeatureTable.Data[PNTS_PROP_BATCH_ID] = out
 			} else if max > 0xFF {
-				m.FeatureTable.Header[I3DM_PROP_BATCH_ID] = BinaryBodyReference{ComponentType: COMPONENT_TYPE_UNSIGNED_SHORT, ContainerType: CONTAINER_TYPE_SCALAR}
-				for i := range t {
-					m.FeatureTable.Data[I3DM_PROP_BATCH_ID] = append(m.FeatureTable.Data[I3DM_PROP_BATCH_ID], uint16(t[i]))
+				m.FeatureTable.Header[PNTS_PROP_BATCH_ID] = BinaryBodyReference{ComponentType: COMPONENT_TYPE_UNSIGNED_SHORT, ContainerType: CONTAINER_TYPE_SCALAR}
+				out := make([]uint16, len(t))
+				for i := range out {
+					out[i] = uint16(t[i])
 				}
+				m.FeatureTable.Data[PNTS_PROP_BATCH_ID] = out
 			} else {
-				m.FeatureTable.Header[I3DM_PROP_BATCH_ID] = BinaryBodyReference{ComponentType: COMPONENT_TYPE_UNSIGNED_BYTE, ContainerType: CONTAINER_TYPE_SCALAR}
-				for i := range t {
-					m.FeatureTable.Data[I3DM_PROP_BATCH_ID] = append(m.FeatureTable.Data[I3DM_PROP_BATCH_ID], uint8(t[i]))
+				m.FeatureTable.Header[PNTS_PROP_BATCH_ID] = BinaryBodyReference{ComponentType: COMPONENT_TYPE_UNSIGNED_BYTE, ContainerType: CONTAINER_TYPE_SCALAR}
+				out := make([]uint8, len(t))
+				for i := range out {
+					out[i] = uint8(t[i])
 				}
+				m.FeatureTable.Data[PNTS_PROP_BATCH_ID] = out
 			}
 		}
 	}
@@ -214,42 +202,33 @@ func (m *PointCloud) SetFeatureTable(view PntsFeatureTableView) {
 
 func (m *PointCloud) GetFeatureTableView() PntsFeatureTableView {
 	ret := PntsFeatureTableView{}
-	for i := range m.FeatureTable.Data[PNTS_PROP_POSITION] {
-		ret.Position = append(ret.Position, m.FeatureTable.Data[PNTS_PROP_POSITION][i].([3]float64))
+
+	if t := m.FeatureTable.Data[PNTS_PROP_POSITION]; t != nil {
+		ret.Position = t.([][3]float64)
 	}
 
-	for i := range m.FeatureTable.Data[PNTS_PROP_POSITION_QUANTIZED] {
-		ret.PositionQuantized = append(ret.PositionQuantized, m.FeatureTable.Data[PNTS_PROP_POSITION_QUANTIZED][i].([3]uint16))
+	if t := m.FeatureTable.Data[PNTS_PROP_POSITION_QUANTIZED]; t != nil {
+		ret.PositionQuantized = t.([][3]uint16)
 	}
 
-	if m.FeatureTable.Data[PNTS_PROP_RGBA] != nil {
-		for i := range m.FeatureTable.Data[PNTS_PROP_RGBA] {
-			ret.RGBA = append(ret.RGBA, m.FeatureTable.Data[PNTS_PROP_RGBA][i].([4]uint8))
-		}
+	if t := m.FeatureTable.Data[PNTS_PROP_RGBA]; t != nil {
+		ret.RGBA = t.([][4]uint8)
 	}
 
-	if m.FeatureTable.Data[PNTS_PROP_RGB] != nil {
-		for i := range m.FeatureTable.Data[PNTS_PROP_RGB] {
-			ret.RGB = append(ret.RGB, m.FeatureTable.Data[PNTS_PROP_RGB][i].([3]uint8))
-		}
+	if t := m.FeatureTable.Data[PNTS_PROP_RGB]; t != nil {
+		ret.RGB = t.([][3]uint8)
 	}
 
-	if m.FeatureTable.Data[PNTS_PROP_RGB565] != nil {
-		for i := range m.FeatureTable.Data[PNTS_PROP_RGB565] {
-			ret.RGB565 = m.FeatureTable.Data[PNTS_PROP_RGB565][i].([]uint16)
-		}
+	if t := m.FeatureTable.Data[PNTS_PROP_RGB565]; t != nil {
+		ret.RGB565 = t.([]uint16)
 	}
 
-	if m.FeatureTable.Data[PNTS_PROP_NORMAL] != nil {
-		for i := range m.FeatureTable.Data[PNTS_PROP_NORMAL] {
-			ret.Normal = append(ret.Normal, m.FeatureTable.Data[PNTS_PROP_NORMAL][i].([3]float32))
-		}
+	if t := m.FeatureTable.Data[PNTS_PROP_NORMAL]; t != nil {
+		ret.Normal = t.([][3]float32)
 	}
 
-	if m.FeatureTable.Data[PNTS_PROP_NORMAL_OCT32P] != nil {
-		for i := range m.FeatureTable.Data[PNTS_PROP_NORMAL_OCT32P] {
-			ret.NormalOCT16P = append(ret.NormalOCT16P, m.FeatureTable.Data[PNTS_PROP_NORMAL_OCT32P][i].([2]uint8))
-		}
+	if t := m.FeatureTable.Data[PNTS_PROP_NORMAL_OCT32P]; t != nil {
+		ret.NormalOCT16P = t.([][2]uint8)
 	}
 
 	if m.FeatureTable.Data[PNTS_PROP_BATCH_ID] != nil {
@@ -277,8 +256,8 @@ func (m *PointCloud) GetFeatureTableView() PntsFeatureTableView {
 	return ret
 }
 
-func (m *PointCloud) GetHeader() *Header {
-	return &m.Header.Header
+func (m *PointCloud) GetHeader() Header {
+	return &m.Header
 }
 
 func (m *PointCloud) GetFeatureTable() *FeatureTable {
@@ -299,12 +278,12 @@ func (m *PointCloud) Read(reader io.ReadSeeker) error {
 		return err
 	}
 
-	if err := m.FeatureTable.Read(reader, *m.GetHeader()); err != nil {
+	if err := m.FeatureTable.Read(reader, m.GetHeader()); err != nil {
 		return err
 	}
 
 	//TODO batchLength
-	if err := m.BatchTable.Read(reader, *m.GetHeader(), 0); err != nil {
+	if err := m.BatchTable.Read(reader, m.GetHeader(), 0); err != nil {
 		return err
 	}
 

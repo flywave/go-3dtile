@@ -5,16 +5,16 @@ import (
 	"io"
 )
 
-type FeatureTableConvert func(header map[string]interface{}, buff []byte) map[string][]interface{}
+type FeatureTableConvert func(header map[string]interface{}, buff []byte) map[string]interface{}
 
 type FeatureTable struct {
 	Header map[string]interface{}
-	Data   map[string][]interface{}
+	Data   map[string]interface{}
 }
 
 func (t *FeatureTable) readJSONHeader(data io.ReadSeeker) error {
 	dec := json.NewDecoder(data)
-	if err := dec.Decode(t.Header); err != nil {
+	if err := dec.Decode(&t.Header); err != nil {
 		return err
 	}
 	t.Header = transformBinaryBodyReference(t.Header)
@@ -57,6 +57,6 @@ func (h *FeatureTable) Read(reader io.ReadSeeker, header Header) error {
 	return nil
 }
 
-func (h *FeatureTable) Write(writer io.Writer, header *Header) error {
+func (h *FeatureTable) Write(writer io.Writer, header Header) error {
 	return nil
 }
