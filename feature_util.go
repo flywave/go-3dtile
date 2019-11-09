@@ -11,7 +11,7 @@ var (
 	littleEndian = binary.LittleEndian
 )
 
-func getBatchId(header map[string]interface{}, buff []byte, length int) interface{} {
+func getBatchLength(header map[string]interface{}, buff []byte, length int) interface{} {
 	objValue := header["BATCH_ID"]
 	switch oref := objValue.(type) {
 	case BinaryBodyReference:

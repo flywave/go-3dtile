@@ -99,7 +99,11 @@ type I3dmFeatureTableView struct {
 	EastNorthUp           *bool
 }
 
-func I3dmFeatureTableConvert(header map[string]interface{}, buff []byte) map[string]interface{} {
+func I3dmFeatureTableDecode(header map[string]interface{}, buff []byte) map[string]interface{} {
+	return nil
+}
+
+func I3dmFeatureTableEncode(header map[string]interface{}, data map[string]interface{}) []byte {
 	return nil
 }
 
@@ -284,7 +288,7 @@ func (m *I3dm) CalcSize() int64 {
 	} else {
 		panic("GltfFormat must 0 or 1")
 	}
-	return m.Header.CalcSize() + m.FeatureTable.CalcSize() + m.BatchTable.CalcSize() + int64(gltfSize)
+	return m.Header.CalcSize() + m.FeatureTable.CalcSize() + m.BatchTable.CalcSize(m.FeatureTable.GetBatchLength()) + int64(gltfSize)
 }
 
 func (m *I3dm) Read(reader io.ReadSeeker) error {
@@ -293,12 +297,13 @@ func (m *I3dm) Read(reader io.ReadSeeker) error {
 		return err
 	}
 
+	m.FeatureTable.decode = I3dmFeatureTableDecode
+
 	if err := m.FeatureTable.Read(reader, m.GetHeader()); err != nil {
 		return err
 	}
 
-	//TODO batchLength
-	if err := m.BatchTable.Read(reader, m.GetHeader(), 0); err != nil {
+	if err := m.BatchTable.Read(reader, m.GetHeader(), m.FeatureTable.GetBatchLength()); err != nil {
 		return err
 	}
 
@@ -331,9 +336,10 @@ func (m *I3dm) Write(writer io.Writer) error {
 		}
 	}
 
-	si := m.Header.CalcSize() + m.FeatureTable.CalcSize() + m.BatchTable.CalcSize() + int64(len(buf))
+	si := m.Header.CalcSize() + m.FeatureTable.CalcSize() + m.BatchTable.CalcSize(m.FeatureTable.GetBatchLength()) + int64(len(buf))
 
 	m.Header.ByteLength = uint32(si)
+	m.FeatureTable.encode = I3dmFeatureTableEncode
 
 	err := binary.Write(writer, littleEndian, m.Header)
 

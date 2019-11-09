@@ -51,7 +51,7 @@ func (h *BatchTable) calcJSONSize() int64 {
 	return int64(w.Size)
 }
 
-func (h *BatchTable) CalcSize() int64 {
+func (h *BatchTable) CalcSize(batchLength int) int64 {
 	outJSONHeader := make(map[string]interface{})
 	helper := BinaryBodySizeHelper{Header: &outJSONHeader}
 	for k, v := range h.Header {
@@ -176,8 +176,9 @@ func (h *BatchTable) Write(writer io.Writer, header Header) error {
 		}
 	}
 
-	header.SetBatchTableJSONByteLength(uint32(JSONLenght))
-	header.SetBatchTableBinaryByteLength(uint32(BinaryLenght))
-
+	if header != nil {
+		header.SetBatchTableJSONByteLength(uint32(JSONLenght))
+		header.SetBatchTableBinaryByteLength(uint32(BinaryLenght))
+	}
 	return nil
 }

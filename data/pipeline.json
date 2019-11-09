@@ -1,0 +1,11 @@
+{
+    "input": "TilesetOfTilesets/",
+    "output": "TilesetOfTilesets-output/",
+    "stages": [
+        "combine",
+        {
+            "name": "gzip",
+            "tilesOnly": true
+        }
+    ]
+}
