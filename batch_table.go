@@ -27,6 +27,7 @@ func transformBinaryBodyReference(m map[string]interface{}) map[string]interface
 }
 
 func (t *BatchTable) readJSONHeader(data io.Reader) error {
+	t.Header = make(map[string]interface{})
 	dec := json.NewDecoder(data)
 	if err := dec.Decode(&t.Header); err != nil {
 		return err
@@ -126,6 +127,7 @@ func (h *BatchTable) Read(reader io.ReadSeeker, header Header, batchLength int) 
 	if _, err := reader.Read(batchdata); err != nil {
 		return err
 	}
+	h.Data = make(map[string]interface{})
 	for k, v := range h.Header {
 		switch t := v.(type) {
 		case BinaryBodyReference:

@@ -240,6 +240,12 @@ type I3dm struct {
 }
 
 func (m *I3dm) SetFeatureTable(view I3dmFeatureTableView) {
+	if m.FeatureTable.Header == nil {
+		m.FeatureTable.Header = make(map[string]interface{})
+	}
+	if m.FeatureTable.Data == nil {
+		m.FeatureTable.Data = make(map[string]interface{})
+	}
 	m.FeatureTable.Header[I3DM_PROP_POSITION] = BinaryBodyReference{ComponentType: COMPONENT_TYPE_DOUBLE, ContainerType: CONTAINER_TYPE_VEC3}
 	m.FeatureTable.Data[I3DM_PROP_POSITION] = view.Position
 

@@ -74,7 +74,7 @@ type BinaryBodyReference struct {
 }
 
 func (r *BinaryBodyReference) GetMap() map[string]interface{} {
-	var ret map[string]interface{}
+	ret := make(map[string]interface{})
 	ret[REF_PROP_BYTE_OFFSET] = r.ByteOffset
 	if len(r.ComponentType) > 0 {
 		ret[REF_PROP_COMPONENT_TYPE] = r.ComponentType

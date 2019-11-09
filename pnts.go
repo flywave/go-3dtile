@@ -251,6 +251,12 @@ type Pnts struct {
 }
 
 func (m *Pnts) SetFeatureTable(view PntsFeatureTableView) {
+	if m.FeatureTable.Header == nil {
+		m.FeatureTable.Header = make(map[string]interface{})
+	}
+	if m.FeatureTable.Data == nil {
+		m.FeatureTable.Data = make(map[string]interface{})
+	}
 	m.FeatureTable.Header[PNTS_PROP_POSITION] = BinaryBodyReference{ComponentType: COMPONENT_TYPE_FLOAT, ContainerType: CONTAINER_TYPE_VEC3}
 	m.FeatureTable.Data[PNTS_PROP_POSITION] = view.Position
 
@@ -378,15 +384,19 @@ func (m *Pnts) GetFeatureTableView() PntsFeatureTableView {
 	if m.FeatureTable.Header[PNTS_PROP_RTC_CENTER] != nil {
 		ret.RtcCenter = m.FeatureTable.Header[PNTS_PROP_RTC_CENTER].([]float64)
 	}
+
 	if m.FeatureTable.Header[PNTS_PROP_QUANTIZED_VOLUME_OFFSET] != nil {
 		ret.QuantizedVolumeOffset = m.FeatureTable.Header[PNTS_PROP_QUANTIZED_VOLUME_OFFSET].([]float64)
 	}
+
 	if m.FeatureTable.Header[PNTS_PROP_QUANTIZED_VOLUME_SCALE] != nil {
 		ret.QuantizedVolumeScale = m.FeatureTable.Header[PNTS_PROP_QUANTIZED_VOLUME_SCALE].([]float64)
 	}
+
 	if m.FeatureTable.Header[PNTS_PROP_CONSTANT_RGBA] != nil {
 		ret.ConstantRGBA = m.FeatureTable.Header[PNTS_PROP_CONSTANT_RGBA].([]uint8)
 	}
+
 	if m.FeatureTable.Header[PNTS_PROP_BATCH_LENGTH] != nil {
 		d := m.FeatureTable.Header[PNTS_PROP_BATCH_LENGTH].(uint32)
 		ret.BatchLength = &d

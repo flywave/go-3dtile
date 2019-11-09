@@ -6,14 +6,15 @@ import (
 	"io"
 )
 
-type FeatureTableDecode func(header map[string]interface{}, buff []byte) map[string]interface{}
-type FeatureTableEncode func(header map[string]interface{}, data map[string]interface{}) []byte
+type featureTableDecode func(header map[string]interface{}, buff []byte) map[string]interface{}
+type featureTableEncode func(header map[string]interface{}, data map[string]interface{}) []byte
 
 type FeatureTable struct {
 	Header map[string]interface{}
 	Data   map[string]interface{}
-	decode FeatureTableDecode
-	encode FeatureTableEncode
+
+	decode featureTableDecode
+	encode featureTableEncode
 }
 
 func (t *FeatureTable) readJSONHeader(data io.ReadSeeker, jsonLength int) error {
@@ -23,6 +24,7 @@ func (t *FeatureTable) readJSONHeader(data io.ReadSeeker, jsonLength int) error 
 	if err != nil {
 		return nil
 	}
+	t.Header = make(map[string]interface{})
 	if err := dec.Decode(&t.Header); err != nil {
 		return err
 	}
@@ -72,6 +74,9 @@ func (h *FeatureTable) GetBatchLength() int {
 }
 
 func (h *FeatureTable) readData(reader io.ReadSeeker, buffLength int) error {
+	if buffLength == 0 {
+		return nil
+	}
 	bdata := make([]byte, buffLength)
 	_, err := reader.Read(bdata)
 	if err != nil {
@@ -82,6 +87,9 @@ func (h *FeatureTable) readData(reader io.ReadSeeker, buffLength int) error {
 }
 
 func (h *FeatureTable) writeData(wr io.Writer) (int, error) {
+	if h.Data == nil {
+		return 0, nil
+	}
 	buff := h.encode(h.Header, h.Data)
 	if buff != nil {
 		n, err := wr.Write(buff)
