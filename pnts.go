@@ -85,7 +85,7 @@ func (h *PntsHeader) SetBatchTableBinaryByteLength(n uint32) {
 }
 
 type PntsFeatureTableView struct {
-	Position              [][3]float64
+	Position              [][3]float32
 	PositionQuantized     [][3]uint16
 	RGBA                  [][4]uint8
 	RGB                   [][3]uint8
@@ -348,7 +348,7 @@ func (m *Pnts) GetFeatureTableView() PntsFeatureTableView {
 	ret := PntsFeatureTableView{}
 
 	if t := m.FeatureTable.Data[PNTS_PROP_POSITION]; t != nil {
-		ret.Position = t.([][3]float64)
+		ret.Position = t.([][3]float32)
 	}
 
 	if t := m.FeatureTable.Data[PNTS_PROP_POSITION_QUANTIZED]; t != nil {
