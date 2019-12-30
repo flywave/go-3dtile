@@ -274,7 +274,7 @@ func getBatchTableValuesFromRef(ref *BinaryBodyReference, buff []byte, propName 
 	if ref != nil {
 		offset := ref.ByteOffset
 		containerSize := ContainerTypeSize(ref.ContainerType)
-		switch ref.ContainerType {
+		switch ref.ComponentType {
 		case COMPONENT_TYPE_BYTE:
 			if containerSize == 1 {
 				return buff[offset+batchLength]
@@ -354,7 +354,7 @@ func getBatchTableValuesFromRef(ref *BinaryBodyReference, buff []byte, propName 
 
 func getBatchTableBinaryByte(ref *BinaryBodyReference, data interface{}) []byte {
 	if ref != nil {
-		switch ref.ContainerType {
+		switch ref.ComponentType {
 		case COMPONENT_TYPE_BYTE:
 			switch d := data.(type) {
 			case byte:

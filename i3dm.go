@@ -83,7 +83,7 @@ func (h *I3dmHeader) SetBatchTableBinaryByteLength(n uint32) {
 }
 
 type I3dmFeatureTableView struct {
-	Position              [][3]float64
+	Position              [][3]float32
 	PositionQuantized     [][3]uint16
 	NormalRight           [][3]float32
 	NormalUp              [][3]float32
@@ -152,7 +152,7 @@ func I3dmFeatureTableEncode(header map[string]interface{}, data map[string]inter
 	buf := bytes.NewBuffer(out)
 	offset := 0
 	if t := data[I3DM_PROP_POSITION]; t != nil {
-		dt := t.([][3]float64)
+		dt := t.([][3]float32)
 		binary.Write(buf, littleEndian, dt)
 		header[I3DM_PROP_POSITION] = BinaryBodyReference{ByteOffset: offset, ComponentType: COMPONENT_TYPE_FLOAT, ContainerType: CONTAINER_TYPE_VEC3}
 		offset += (len(dt) * 3 * 8)
@@ -339,7 +339,7 @@ func (m *I3dm) GetFeatureTableView() I3dmFeatureTableView {
 	ret := I3dmFeatureTableView{}
 
 	if t := m.FeatureTable.Data[I3DM_PROP_POSITION]; t != nil {
-		ret.Position = t.([][3]float64)
+		ret.Position = t.([][3]float32)
 	}
 
 	if t := m.FeatureTable.Data[I3DM_PROP_POSITION_QUANTIZED]; t != nil {

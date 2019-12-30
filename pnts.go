@@ -94,9 +94,9 @@ type PntsFeatureTableView struct {
 	NormalOCT16P          [][2]uint8
 	BatchId               interface{}
 	PointsLength          uint32
-	RtcCenter             []float64
-	QuantizedVolumeOffset []float64
-	QuantizedVolumeScale  []float64
+	RtcCenter             []float32
+	QuantizedVolumeOffset []float32
+	QuantizedVolumeScale  []float32
 	ConstantRGBA          []uint8
 	BatchLength           *uint32
 }
@@ -176,7 +176,7 @@ func PntsFeatureTableEncode(header map[string]interface{}, data map[string]inter
 	offset := 0
 
 	if t := data[PNTS_PROP_POSITION]; t != nil {
-		dt := t.([][3]float64)
+		dt := t.([][3]float32)
 		binary.Write(buf, littleEndian, dt)
 		header[PNTS_PROP_POSITION] = BinaryBodyReference{ByteOffset: offset, ComponentType: COMPONENT_TYPE_DOUBLE, ContainerType: CONTAINER_TYPE_VEC3}
 		offset += (len(dt) * 3 * 8)
@@ -382,15 +382,15 @@ func (m *Pnts) GetFeatureTableView() PntsFeatureTableView {
 	ret.PointsLength = m.FeatureTable.Header[PNTS_PROP_POSITION_LENGTH].(uint32)
 
 	if m.FeatureTable.Header[PNTS_PROP_RTC_CENTER] != nil {
-		ret.RtcCenter = m.FeatureTable.Header[PNTS_PROP_RTC_CENTER].([]float64)
+		ret.RtcCenter = m.FeatureTable.Header[PNTS_PROP_RTC_CENTER].([]float32)
 	}
 
 	if m.FeatureTable.Header[PNTS_PROP_QUANTIZED_VOLUME_OFFSET] != nil {
-		ret.QuantizedVolumeOffset = m.FeatureTable.Header[PNTS_PROP_QUANTIZED_VOLUME_OFFSET].([]float64)
+		ret.QuantizedVolumeOffset = m.FeatureTable.Header[PNTS_PROP_QUANTIZED_VOLUME_OFFSET].([]float32)
 	}
 
 	if m.FeatureTable.Header[PNTS_PROP_QUANTIZED_VOLUME_SCALE] != nil {
-		ret.QuantizedVolumeScale = m.FeatureTable.Header[PNTS_PROP_QUANTIZED_VOLUME_SCALE].([]float64)
+		ret.QuantizedVolumeScale = m.FeatureTable.Header[PNTS_PROP_QUANTIZED_VOLUME_SCALE].([]float32)
 	}
 
 	if m.FeatureTable.Header[PNTS_PROP_CONSTANT_RGBA] != nil {

@@ -68,7 +68,7 @@ func (h *B3dmHeader) SetBatchTableBinaryByteLength(n uint32) {
 
 type B3dmFeatureTableView struct {
 	BatchLength int
-	RtcCenter   []float64
+	RtcCenter   []float32
 }
 
 func B3dmFeatureTableDecode(header map[string]interface{}, buff []byte) map[string]interface{} {
@@ -100,7 +100,7 @@ func (m *B3dm) GetFeatureTableView() B3dmFeatureTableView {
 	ret := B3dmFeatureTableView{}
 	ret.BatchLength = m.FeatureTable.Header[B3DM_PROP_BATCH_LENGTH].(int)
 	if m.FeatureTable.Header[B3DM_PROP_RTC_CENTER] != nil {
-		ret.RtcCenter = m.FeatureTable.Header[B3DM_PROP_RTC_CENTER].([]float64)
+		ret.RtcCenter = m.FeatureTable.Header[B3DM_PROP_RTC_CENTER].([]float32)
 	}
 	return ret
 }
