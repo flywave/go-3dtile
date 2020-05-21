@@ -34,10 +34,12 @@ func (t *FeatureTable) readJSONHeader(data io.ReadSeeker, jsonLength int) error 
 
 func (t *FeatureTable) writeJSONHeader(wr io.Writer) (int, error) {
 	var jdata []byte
-	enc := json.NewEncoder(bytes.NewBuffer(jdata))
+	buf := bytes.NewBuffer(jdata)
+	enc := json.NewEncoder(buf)
 	if err := enc.Encode(t.Header); err != nil {
 		return 0, err
 	}
+	jdata = buf.Bytes()
 	n, err := wr.Write(jdata)
 	if err != nil {
 		return 0, err

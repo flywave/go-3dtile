@@ -440,11 +440,11 @@ func (m *Pnts) Read(reader io.ReadSeeker) error {
 }
 
 func (m *Pnts) Write(writer io.Writer) error {
+	m.FeatureTable.encode = PntsFeatureTableEncode
+
 	si := m.Header.CalcSize() + m.FeatureTable.CalcSize() + m.BatchTable.CalcSize(m.FeatureTable.GetBatchLength())
 
 	m.Header.ByteLength = uint32(si)
-
-	m.FeatureTable.encode = PntsFeatureTableEncode
 
 	err := binary.Write(writer, littleEndian, m.Header)
 

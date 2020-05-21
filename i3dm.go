@@ -223,7 +223,7 @@ func I3dmFeatureTableEncode(header map[string]interface{}, data map[string]inter
 			offset += (len(dt) * 4)
 		}
 	}
-
+	out = buf.Bytes()
 	if len(out) != offset {
 		return nil
 	}
@@ -455,6 +455,7 @@ func (m *I3dm) Read(reader io.ReadSeeker) error {
 
 func (m *I3dm) Write(writer io.Writer) error {
 	var buf []byte
+	m.FeatureTable.encode = I3dmFeatureTableEncode
 
 	if m.Header.GltfFormat == 0 {
 		buf = createPaddingBytes([]byte(m.GltfUri), len(m.GltfUri), 8, 0x20)
@@ -468,7 +469,6 @@ func (m *I3dm) Write(writer io.Writer) error {
 	si := m.Header.CalcSize() + m.FeatureTable.CalcSize() + m.BatchTable.CalcSize(m.FeatureTable.GetBatchLength()) + int64(len(buf))
 
 	m.Header.ByteLength = uint32(si)
-	m.FeatureTable.encode = I3dmFeatureTableEncode
 
 	err := binary.Write(writer, littleEndian, m.Header)
 

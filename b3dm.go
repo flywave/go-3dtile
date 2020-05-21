@@ -147,6 +147,8 @@ func (m *B3dm) Read(reader io.ReadSeeker) error {
 }
 
 func (m *B3dm) Write(writer io.Writer) error {
+	m.FeatureTable.encode = B3dmFeatureTableEncode
+
 	buf, err := getGltfBinary(m.Model, 8)
 	if err != nil {
 		return err
@@ -155,7 +157,6 @@ func (m *B3dm) Write(writer io.Writer) error {
 	si := m.Header.CalcSize() + m.FeatureTable.CalcSize() + m.BatchTable.CalcSize(m.FeatureTable.GetBatchLength()) + int64(len(buf))
 
 	m.Header.ByteLength = uint32(si)
-	m.FeatureTable.encode = B3dmFeatureTableEncode
 
 	err = binary.Write(writer, littleEndian, m.Header)
 
