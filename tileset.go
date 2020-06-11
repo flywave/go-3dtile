@@ -98,7 +98,7 @@ func (b *BoundingVolume) GetData() []float64 {
 }
 
 type Tile struct {
-	Content             Content         `json:"content"`
+	Content             Content         `json:"content,omitempty"`
 	BoundingVolume      BoundingVolume  `json:"boundingVolume"`
 	ViewerRequestVolume *BoundingVolume `json:"viewerRequestVolume"`
 	GeometricError      float64         `json:"geometricError"`
