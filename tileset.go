@@ -99,8 +99,8 @@ func (b *BoundingVolume) GetData() []float64 {
 
 type Tile struct {
 	Content             Content         `json:"content,omitempty"`
-	BoundingVolume      BoundingVolume  `json:"boundingVolume"`
-	ViewerRequestVolume *BoundingVolume `json:"viewerRequestVolume"`
+	BoundingVolume      BoundingVolume  `json:"boundingVolume,omitempty"`
+	ViewerRequestVolume *BoundingVolume `json:"viewerRequestVolume,omitempty"`
 	GeometricError      float64         `json:"geometricError"`
 	Refine              string          `json:"refine"`
 	Transform           [16]float64     `json:"transform"`
@@ -116,9 +116,9 @@ type Tileset struct {
 	ExtensionsRequired *[]string          `json:"extensionsRequired,omitempty"`
 }
 
-func (ts *Tileset) ToJson() string {
-	b, _ := json.Marshal(ts)
-	return string(b)
+func (ts *Tileset) ToJson() (string, error) {
+	b, e := json.Marshal(ts)
+	return string(b), e
 }
 
 func TilesetFromJson(data io.Reader) *Tileset {
