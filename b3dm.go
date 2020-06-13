@@ -86,6 +86,13 @@ type B3dm struct {
 	Model        *gltf.Document
 }
 
+func NewB3dm() *B3dm {
+	m := &B3dm{}
+	m.FeatureTable.Header = make(map[string]interface{})
+	m.FeatureTable.Header[B3DM_PROP_BATCH_LENGTH] = 0
+	return m
+}
+
 func (m *B3dm) SetFeatureTable(view B3dmFeatureTableView) {
 	if m.FeatureTable.Header == nil {
 		m.FeatureTable.Header = make(map[string]interface{})
@@ -118,7 +125,7 @@ func (m *B3dm) GetBatchTable() *BatchTable {
 }
 
 func (m *B3dm) CalcSize() int64 {
-	return m.Header.CalcSize() + m.FeatureTable.CalcSize() + m.BatchTable.CalcSize(m.FeatureTable.GetBatchLength()) + calcGltfSize(m.Model, 8)
+	return m.Header.CalcSize() + m.FeatureTable.CalcSize(m.GetHeader()) + m.BatchTable.CalcSize(m.GetHeader()) + calcGltfSize(m.Model, 8)
 }
 
 func (m *B3dm) Read(reader io.ReadSeeker) error {
@@ -154,7 +161,7 @@ func (m *B3dm) Write(writer io.Writer) error {
 		return err
 	}
 
-	si := m.Header.CalcSize() + m.FeatureTable.CalcSize() + m.BatchTable.CalcSize(m.FeatureTable.GetBatchLength()) + int64(len(buf))
+	si := m.Header.CalcSize() + m.FeatureTable.CalcSize(m.GetHeader()) + m.BatchTable.CalcSize(m.GetHeader()) + int64(len(buf))
 
 	m.Header.ByteLength = uint32(si)
 
@@ -164,11 +171,11 @@ func (m *B3dm) Write(writer io.Writer) error {
 		return err
 	}
 
-	if err := m.FeatureTable.Write(writer, m.GetHeader()); err != nil {
+	if err := m.FeatureTable.Write(writer, nil); err != nil {
 		return err
 	}
 
-	if err := m.BatchTable.Write(writer, m.GetHeader()); err != nil {
+	if err := m.BatchTable.Write(writer, nil); err != nil {
 		return err
 	}
 

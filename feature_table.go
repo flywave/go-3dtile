@@ -52,15 +52,15 @@ func (h *FeatureTable) calcJSONSize() int64 {
 	if _, err := h.writeJSONHeader(w.writer); err != nil {
 		return 0
 	}
-	return int64(w.Size)
+	return int64(w.GetSize())
 }
 
-func (h *FeatureTable) CalcSize() int64 {
+func (h *FeatureTable) CalcSize(header Header) int64 {
 	w := newSizeWriter()
-	if err := h.Write(w.writer, nil); err != nil {
+	if err := h.Write(w.writer, header); err != nil {
 		return 0
 	}
-	return int64(w.Size)
+	return int64(w.GetSize())
 }
 
 func (h *FeatureTable) GetBatchLength() int {
@@ -76,9 +76,6 @@ func (h *FeatureTable) GetBatchLength() int {
 }
 
 func (h *FeatureTable) readData(reader io.ReadSeeker, buffLength int) error {
-	if buffLength == 0 {
-		return nil
-	}
 	bdata := make([]byte, buffLength)
 	_, err := reader.Read(bdata)
 	if err != nil {
@@ -89,9 +86,6 @@ func (h *FeatureTable) readData(reader io.ReadSeeker, buffLength int) error {
 }
 
 func (h *FeatureTable) writeData(wr io.Writer) (int, error) {
-	if h.Data == nil {
-		return 0, nil
-	}
 	buff := h.encode(h.Header, h.Data)
 	if buff != nil {
 		n, err := wr.Write(buff)

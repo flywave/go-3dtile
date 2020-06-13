@@ -417,7 +417,7 @@ func (m *Pnts) GetBatchTable() *BatchTable {
 }
 
 func (m *Pnts) CalcSize() int64 {
-	return m.Header.CalcSize() + m.FeatureTable.CalcSize() + m.BatchTable.CalcSize(m.FeatureTable.GetBatchLength())
+	return m.Header.CalcSize() + m.FeatureTable.CalcSize(m.GetHeader()) + m.BatchTable.CalcSize(m.GetHeader())
 }
 
 func (m *Pnts) Read(reader io.ReadSeeker) error {
@@ -442,7 +442,7 @@ func (m *Pnts) Read(reader io.ReadSeeker) error {
 func (m *Pnts) Write(writer io.Writer) error {
 	m.FeatureTable.encode = PntsFeatureTableEncode
 
-	si := m.Header.CalcSize() + m.FeatureTable.CalcSize() + m.BatchTable.CalcSize(m.FeatureTable.GetBatchLength())
+	si := m.Header.CalcSize() + m.FeatureTable.CalcSize(m.GetHeader()) + m.BatchTable.CalcSize(m.GetHeader())
 
 	m.Header.ByteLength = uint32(si)
 
@@ -452,11 +452,11 @@ func (m *Pnts) Write(writer io.Writer) error {
 		return err
 	}
 
-	if err := m.FeatureTable.Write(writer, m.GetHeader()); err != nil {
+	if err := m.FeatureTable.Write(writer, nil); err != nil {
 		return err
 	}
 
-	if err := m.BatchTable.Write(writer, m.GetHeader()); err != nil {
+	if err := m.BatchTable.Write(writer, nil); err != nil {
 		return err
 	}
 

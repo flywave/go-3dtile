@@ -49,22 +49,15 @@ func (h *BatchTable) calcJSONSize() int64 {
 	if err := h.writeJSONHeader(w.writer); err != nil {
 		return 0
 	}
-	return int64(w.Size)
+	return int64(w.GetSize())
 }
 
-func (h *BatchTable) CalcSize(batchLength int) int64 {
-	outJSONHeader := make(map[string]interface{})
-	helper := BinaryBodySizeHelper{Header: &outJSONHeader}
-	for k, v := range h.Header {
-		switch t := v.(type) {
-		case BinaryBodyReference:
-			helper.addProperty(k, h.Data[k], t.ComponentType, t.ContainerType, false)
-		default:
-			outJSONHeader[k] = v
-		}
+func (h *BatchTable) CalcSize(header Header) int64 {
+	w := newSizeWriter()
+	if err := h.Write(w.writer, header); err != nil {
+		return 0
 	}
-	helper.finished()
-	return int64(helper.calcHeaderSize(0) + helper.Size)
+	return int64(w.GetSize())
 }
 
 func (h *BatchTable) GetProperty(property string, batchId int) interface{} {
@@ -143,10 +136,10 @@ func (h *BatchTable) Read(reader io.ReadSeeker, header Header, batchLength int) 
 }
 
 func (h *BatchTable) Write(writer io.Writer, header Header) error {
-	outJSONHeader := make(map[string]interface{})
 	var outBinaryBytes [][]byte
-	var JSONLenght int
+	JSONLenght := 0
 	offset := 0
+	outJSONHeader := make(map[string]interface{})
 	for k, v := range h.Header {
 		switch t := v.(type) {
 		case BinaryBodyReference:
@@ -160,7 +153,7 @@ func (h *BatchTable) Write(writer io.Writer, header Header) error {
 		}
 	}
 
-	if bts, err := json.Marshal(writer); err != nil {
+	if bts, err := json.Marshal(outJSONHeader); err != nil {
 		return err
 	} else {
 		n := len(bts)

@@ -18,10 +18,11 @@ var (
 type Asset struct {
 	Version        string `json:"version"`
 	TilesetVersion string `json:"tilesetVersion,omitempty"`
+	GltfUpAxis     string `json:"gltfUpAxis,omitempty"`
 }
 
 type Content struct {
-	Url            string          `json:"url"`
+	Url            string          `json:"uri"`
 	BoundingVolume *BoundingVolume `json:"boundingVolume,omitempty"`
 }
 
@@ -98,7 +99,7 @@ func (b *BoundingVolume) GetData() []float64 {
 }
 
 type Tile struct {
-	Content             Content         `json:"content,omitempty"`
+	Content             *Content        `json:"content,omitempty"`
 	BoundingVolume      BoundingVolume  `json:"boundingVolume,omitempty"`
 	ViewerRequestVolume *BoundingVolume `json:"viewerRequestVolume,omitempty"`
 	GeometricError      float64         `json:"geometricError"`

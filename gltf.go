@@ -58,6 +58,10 @@ func (w *calcSizeWriter) Bytes() []byte {
 	return w.writer.(*bytes.Buffer).Bytes()
 }
 
+func (w *calcSizeWriter) GetSize() int {
+	return len(w.Bytes())
+}
+
 func calcGltfSize(doc *gltf.Document, paddingUnit int) int64 {
 	w := newSizeWriter()
 	enc := gltf.NewEncoder(w.writer)
