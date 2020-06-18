@@ -13,8 +13,12 @@ func TestLoadGlb(t *testing.T) {
 	}
 }
 
-func TestReadCmpt(t *testing.T) {
-	f, _ := os.Open("./data/0-0.cmpt")
-	cp := &Cmpt{}
+func TestReadB3dm(t *testing.T) {
+	f, _ := os.Open("./data/0.b3dm")
+	cp := &B3dm{}
 	cp.Read(f)
+
+	f1, _ := os.Open("./data/0-0.cmpt")
+	cp1 := &Cmpt{}
+	cp1.Read(f1)
 }
