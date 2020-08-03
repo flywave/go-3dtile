@@ -160,7 +160,7 @@ func (h *BatchTable) Write(writer io.Writer, header Header) error {
 		}
 	}
 
-	if bts, err := json.Marshal(writer); err != nil {
+	if bts, err := json.Marshal(outJSONHeader); err != nil {
 		return err
 	} else {
 		n := len(bts)
