@@ -1,6 +1,7 @@
 package tile3d
 
 import (
+	"bytes"
 	"io"
 
 	"github.com/qmuntal/gltf"
@@ -39,18 +40,26 @@ func writeGltfBinary(writer io.Writer, doc *gltf.Document) error {
 type calcSizeWriter struct {
 	writer io.Writer
 	Size   int
-	Data   []byte
 }
 
 func newSizeWriter() calcSizeWriter {
-	return calcSizeWriter{Size: int(0)}
+	wt := bytes.NewBuffer([]byte{})
+	return calcSizeWriter{Size: int(0), writer: wt}
 }
 
 func (w *calcSizeWriter) Write(p []byte) (n int, err error) {
 	si := len(p)
-	w.Data = append(w.Data, p...)
+	w.writer.Write(p)
 	w.Size += int(si)
 	return si, nil
+}
+
+func (w *calcSizeWriter) Bytes() []byte {
+	return w.writer.(*bytes.Buffer).Bytes()
+}
+
+func (w *calcSizeWriter) GetSize() int {
+	return len(w.Bytes())
 }
 
 func calcGltfSize(doc *gltf.Document, paddingUnit int) int64 {
@@ -72,12 +81,12 @@ func getGltfBinary(doc *gltf.Document, paddingUnit int) ([]byte, error) {
 	}
 	padding := calcPadding(w.Size, paddingUnit)
 	if padding == 0 {
-		return w.Data, nil
+		return w.Bytes(), nil
 	}
 	pad := make([]byte, padding)
 	for i := range pad {
 		pad[i] = 0x20
 	}
-	w.Data = append(w.Data, pad...)
-	return w.Data, nil
+	w.Write(pad)
+	return w.Bytes(), nil
 }

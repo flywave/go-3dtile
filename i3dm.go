@@ -223,7 +223,7 @@ func I3dmFeatureTableEncode(header map[string]interface{}, data map[string]inter
 			offset += (len(dt) * 4)
 		}
 	}
-
+	out = buf.Bytes()
 	if len(out) != offset {
 		return nil
 	}
@@ -246,7 +246,7 @@ func (m *I3dm) SetFeatureTable(view I3dmFeatureTableView) {
 	if m.FeatureTable.Data == nil {
 		m.FeatureTable.Data = make(map[string]interface{})
 	}
-	m.FeatureTable.Header[I3DM_PROP_POSITION] = BinaryBodyReference{ComponentType: COMPONENT_TYPE_DOUBLE, ContainerType: CONTAINER_TYPE_VEC3}
+	m.FeatureTable.Header[I3DM_PROP_POSITION] = BinaryBodyReference{ComponentType: COMPONENT_TYPE_FLOAT, ContainerType: CONTAINER_TYPE_VEC3}
 	m.FeatureTable.Data[I3DM_PROP_POSITION] = view.Position
 
 	m.FeatureTable.Header[I3DM_PROP_POSITION_QUANTIZED] = BinaryBodyReference{ComponentType: COMPONENT_TYPE_UNSIGNED_SHORT, ContainerType: CONTAINER_TYPE_VEC3}
@@ -417,7 +417,7 @@ func (m *I3dm) CalcSize() int64 {
 	} else {
 		panic("GltfFormat must 0 or 1")
 	}
-	return m.Header.CalcSize() + m.FeatureTable.CalcSize() + m.BatchTable.CalcSize(m.FeatureTable.GetBatchLength()) + int64(gltfSize)
+	return m.Header.CalcSize() + m.FeatureTable.CalcSize(m.GetHeader()) + m.BatchTable.CalcSize(m.GetHeader()) + int64(gltfSize)
 }
 
 func (m *I3dm) Read(reader io.ReadSeeker) error {
@@ -455,6 +455,7 @@ func (m *I3dm) Read(reader io.ReadSeeker) error {
 
 func (m *I3dm) Write(writer io.Writer) error {
 	var buf []byte
+	m.FeatureTable.encode = I3dmFeatureTableEncode
 
 	if m.Header.GltfFormat == 0 {
 		buf = createPaddingBytes([]byte(m.GltfUri), len(m.GltfUri), 8, 0x20)
@@ -465,10 +466,9 @@ func (m *I3dm) Write(writer io.Writer) error {
 		}
 	}
 
-	si := m.Header.CalcSize() + m.FeatureTable.CalcSize() + m.BatchTable.CalcSize(m.FeatureTable.GetBatchLength()) + int64(len(buf))
+	si := m.Header.CalcSize() + m.FeatureTable.CalcSize(m.GetHeader()) + m.BatchTable.CalcSize(m.GetHeader()) + int64(len(buf))
 
 	m.Header.ByteLength = uint32(si)
-	m.FeatureTable.encode = I3dmFeatureTableEncode
 
 	err := binary.Write(writer, littleEndian, m.Header)
 
@@ -476,11 +476,11 @@ func (m *I3dm) Write(writer io.Writer) error {
 		return err
 	}
 
-	if err := m.FeatureTable.Write(writer, m.GetHeader()); err != nil {
+	if err := m.FeatureTable.Write(writer, nil); err != nil {
 		return err
 	}
 
-	if err := m.BatchTable.Write(writer, m.GetHeader()); err != nil {
+	if err := m.BatchTable.Write(writer, nil); err != nil {
 		return err
 	}
 
