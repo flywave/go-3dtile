@@ -241,7 +241,7 @@ func PntsFeatureTableEncode(header map[string]interface{}, data map[string]inter
 		}
 	}
 
-	return out
+	return buf.Bytes()
 }
 
 type Pnts struct {
