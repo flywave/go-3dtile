@@ -76,6 +76,9 @@ func (h *FeatureTable) GetBatchLength() int {
 }
 
 func (h *FeatureTable) readData(reader io.ReadSeeker, buffLength int) error {
+	if buffLength == 0 {
+		return nil
+	}
 	bdata := make([]byte, buffLength)
 	_, err := reader.Read(bdata)
 	if err != nil {

@@ -155,7 +155,7 @@ func I3dmFeatureTableEncode(header map[string]interface{}, data map[string]inter
 		dt := t.([][3]float32)
 		binary.Write(buf, littleEndian, dt)
 		header[I3DM_PROP_POSITION] = BinaryBodyReference{ByteOffset: offset, ComponentType: COMPONENT_TYPE_FLOAT, ContainerType: CONTAINER_TYPE_VEC3}
-		offset += (len(dt) * 3 * 8)
+		offset += (len(dt) * 3 * 4)
 	}
 
 	if t := data[I3DM_PROP_POSITION_QUANTIZED]; t != nil {
