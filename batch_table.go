@@ -111,6 +111,13 @@ func (h *BatchTable) Read(reader io.ReadSeeker, header Header, batchLength int) 
 	if _, err := reader.Read(jsonb); err != nil {
 		return err
 	}
+
+	if batchLength == 0 {
+		h.Data = make(map[string]interface{})
+		h.Header = make(map[string]interface{})
+		return nil
+	}
+
 	jsonr := bytes.NewReader(jsonb)
 	if err := h.readJSONHeader(jsonr); err != nil {
 		return err
@@ -143,7 +150,7 @@ func (h *BatchTable) Write(writer io.Writer, header Header) error {
 	for k, v := range h.Header {
 		switch t := v.(type) {
 		case BinaryBodyReference:
-			t.ByteOffset = offset
+			t.ByteOffset = uint32(offset)
 			outJSONHeader[k] = t.GetMap()
 			bts := getBatchTableBinaryByte(&t, h.Data[k])
 			offset += len(bts)
@@ -152,22 +159,23 @@ func (h *BatchTable) Write(writer io.Writer, header Header) error {
 			outJSONHeader[k] = v
 		}
 	}
-
-	if bts, err := json.Marshal(outJSONHeader); err != nil {
-		return err
-	} else {
-		n := len(bts)
-		bts := createPaddingBytes(bts, n, 8, 0x20)
-		if _, err := writer.Write(bts); err != nil {
+	var BinaryLenght int
+	if len(outJSONHeader) > 0 {
+		if bts, err := json.Marshal(outJSONHeader); err != nil {
 			return err
+		} else {
+			n := len(bts)
+			bts := createPaddingBytes(bts, uint32(n), 8, 0x20)
+			if _, err := writer.Write(bts); err != nil {
+				return err
+			}
+			JSONLenght = len(bts)
 		}
-		JSONLenght = len(bts)
-	}
-	BinaryLenght := 0
-	for i := range outBinaryBytes {
-		BinaryLenght += len(outBinaryBytes[i])
-		if _, err := writer.Write(outBinaryBytes[i]); err != nil {
-			return err
+		for i := range outBinaryBytes {
+			BinaryLenght += len(outBinaryBytes[i])
+			if _, err := writer.Write(outBinaryBytes[i]); err != nil {
+				return err
+			}
 		}
 	}
 

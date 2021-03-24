@@ -178,49 +178,49 @@ func PntsFeatureTableEncode(header map[string]interface{}, data map[string]inter
 	if t := data[PNTS_PROP_POSITION]; t != nil {
 		dt := t.([][3]float32)
 		binary.Write(buf, littleEndian, dt)
-		header[PNTS_PROP_POSITION] = BinaryBodyReference{ByteOffset: offset, ComponentType: COMPONENT_TYPE_DOUBLE, ContainerType: CONTAINER_TYPE_VEC3}
+		header[PNTS_PROP_POSITION] = BinaryBodyReference{ByteOffset: uint32(offset), ComponentType: COMPONENT_TYPE_DOUBLE, ContainerType: CONTAINER_TYPE_VEC3}
 		offset += (len(dt) * 3 * 8)
 	}
 
 	if t := data[PNTS_PROP_POSITION_QUANTIZED]; t != nil {
 		dt := t.([][3]uint16)
 		binary.Write(buf, littleEndian, dt)
-		header[PNTS_PROP_POSITION_QUANTIZED] = BinaryBodyReference{ByteOffset: offset, ComponentType: COMPONENT_TYPE_UNSIGNED_SHORT, ContainerType: CONTAINER_TYPE_VEC3}
+		header[PNTS_PROP_POSITION_QUANTIZED] = BinaryBodyReference{ByteOffset: uint32(offset), ComponentType: COMPONENT_TYPE_UNSIGNED_SHORT, ContainerType: CONTAINER_TYPE_VEC3}
 		offset += (len(dt) * 3 * 2)
 	}
 
 	if t := data[PNTS_PROP_RGBA]; t != nil {
 		dt := t.([][4]uint8)
 		binary.Write(buf, littleEndian, dt)
-		header[PNTS_PROP_RGBA] = BinaryBodyReference{ByteOffset: offset, ComponentType: COMPONENT_TYPE_UNSIGNED_BYTE, ContainerType: CONTAINER_TYPE_VEC4}
+		header[PNTS_PROP_RGBA] = BinaryBodyReference{ByteOffset: uint32(offset), ComponentType: COMPONENT_TYPE_UNSIGNED_BYTE, ContainerType: CONTAINER_TYPE_VEC4}
 		offset += (len(dt) * 4)
 	}
 
 	if t := data[PNTS_PROP_RGB]; t != nil {
 		dt := t.([][3]uint8)
 		binary.Write(buf, littleEndian, dt)
-		header[PNTS_PROP_RGB] = BinaryBodyReference{ByteOffset: offset, ComponentType: COMPONENT_TYPE_UNSIGNED_BYTE, ContainerType: CONTAINER_TYPE_VEC3}
+		header[PNTS_PROP_RGB] = BinaryBodyReference{ByteOffset: uint32(offset), ComponentType: COMPONENT_TYPE_UNSIGNED_BYTE, ContainerType: CONTAINER_TYPE_VEC3}
 		offset += (len(dt) * 3)
 	}
 
 	if t := data[PNTS_PROP_RGB565]; t != nil {
 		dt := t.([]uint16)
 		binary.Write(buf, littleEndian, dt)
-		header[PNTS_PROP_RGB565] = BinaryBodyReference{ByteOffset: offset, ComponentType: COMPONENT_TYPE_UNSIGNED_SHORT, ContainerType: CONTAINER_TYPE_SCALAR}
+		header[PNTS_PROP_RGB565] = BinaryBodyReference{ByteOffset: uint32(offset), ComponentType: COMPONENT_TYPE_UNSIGNED_SHORT, ContainerType: CONTAINER_TYPE_SCALAR}
 		offset += (len(dt) * 2)
 	}
 
 	if t := data[PNTS_PROP_NORMAL]; t != nil {
 		dt := t.([][3]float32)
 		binary.Write(buf, littleEndian, dt)
-		header[PNTS_PROP_NORMAL] = BinaryBodyReference{ByteOffset: offset, ComponentType: COMPONENT_TYPE_FLOAT, ContainerType: CONTAINER_TYPE_VEC3}
+		header[PNTS_PROP_NORMAL] = BinaryBodyReference{ByteOffset: uint32(offset), ComponentType: COMPONENT_TYPE_FLOAT, ContainerType: CONTAINER_TYPE_VEC3}
 		offset += (len(dt) * 3 * 4)
 	}
 
 	if t := data[PNTS_PROP_NORMAL_OCT32P]; t != nil {
 		dt := t.([][2]uint8)
 		binary.Write(buf, littleEndian, dt)
-		header[PNTS_PROP_NORMAL_OCT32P] = BinaryBodyReference{ByteOffset: offset, ComponentType: COMPONENT_TYPE_UNSIGNED_BYTE, ContainerType: CONTAINER_TYPE_VEC2}
+		header[PNTS_PROP_NORMAL_OCT32P] = BinaryBodyReference{ByteOffset: uint32(offset), ComponentType: COMPONENT_TYPE_UNSIGNED_BYTE, ContainerType: CONTAINER_TYPE_VEC2}
 		offset += (len(dt) * 2)
 	}
 
@@ -228,15 +228,15 @@ func PntsFeatureTableEncode(header map[string]interface{}, data map[string]inter
 		switch dt := data[I3DM_PROP_BATCH_ID].(type) {
 		case []uint8:
 			binary.Write(buf, littleEndian, dt)
-			header[PNTS_PROP_BATCH_ID] = BinaryBodyReference{ByteOffset: offset, ComponentType: COMPONENT_TYPE_UNSIGNED_BYTE}
+			header[PNTS_PROP_BATCH_ID] = BinaryBodyReference{ByteOffset: uint32(offset), ComponentType: COMPONENT_TYPE_UNSIGNED_BYTE}
 			offset += len(dt)
 		case []uint16:
 			binary.Write(buf, littleEndian, dt)
-			header[PNTS_PROP_BATCH_ID] = BinaryBodyReference{ByteOffset: offset, ComponentType: COMPONENT_TYPE_UNSIGNED_SHORT}
+			header[PNTS_PROP_BATCH_ID] = BinaryBodyReference{ByteOffset: uint32(offset), ComponentType: COMPONENT_TYPE_UNSIGNED_SHORT}
 			offset += (len(dt) * 2)
 		case []uint32:
 			binary.Write(buf, littleEndian, dt)
-			header[PNTS_PROP_BATCH_ID] = BinaryBodyReference{ByteOffset: offset, ComponentType: COMPONENT_TYPE_UNSIGNED_INT}
+			header[PNTS_PROP_BATCH_ID] = BinaryBodyReference{ByteOffset: uint32(offset), ComponentType: COMPONENT_TYPE_UNSIGNED_INT}
 			offset += (len(dt) * 4)
 		}
 	}
@@ -441,7 +441,7 @@ func (m *Pnts) Read(reader io.ReadSeeker) error {
 
 func (m *Pnts) Write(writer io.Writer) error {
 	m.FeatureTable.encode = PntsFeatureTableEncode
-
+	PntsFeatureTableEncode(m.FeatureTable.Header, m.FeatureTable.Data)
 	si := m.Header.CalcSize() + m.FeatureTable.CalcSize(m.GetHeader()) + m.BatchTable.CalcSize(m.GetHeader())
 
 	m.Header.ByteLength = uint32(si)

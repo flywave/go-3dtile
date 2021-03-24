@@ -39,18 +39,18 @@ func writeGltfBinary(writer io.Writer, doc *gltf.Document) error {
 
 type calcSizeWriter struct {
 	writer io.Writer
-	Size   int
+	Size   uint32
 }
 
 func newSizeWriter() calcSizeWriter {
 	wt := bytes.NewBuffer([]byte{})
-	return calcSizeWriter{Size: int(0), writer: wt}
+	return calcSizeWriter{Size: 0, writer: wt}
 }
 
 func (w *calcSizeWriter) Write(p []byte) (n int, err error) {
 	si := len(p)
 	w.writer.Write(p)
-	w.Size += int(si)
+	w.Size += uint32(si)
 	return si, nil
 }
 
@@ -62,7 +62,7 @@ func (w *calcSizeWriter) GetSize() int {
 	return len(w.Bytes())
 }
 
-func calcGltfSize(doc *gltf.Document, paddingUnit int) int64 {
+func calcGltfSize(doc *gltf.Document, paddingUnit uint32) int64 {
 	w := newSizeWriter()
 	enc := gltf.NewEncoder(w.writer)
 	enc.AsBinary = true
@@ -72,7 +72,7 @@ func calcGltfSize(doc *gltf.Document, paddingUnit int) int64 {
 	return int64(calcPadding(w.Size, paddingUnit))
 }
 
-func getGltfBinary(doc *gltf.Document, paddingUnit int) ([]byte, error) {
+func getGltfBinary(doc *gltf.Document, paddingUnit uint32) ([]byte, error) {
 	w := newSizeWriter()
 	enc := gltf.NewEncoder(w.writer)
 	enc.AsBinary = true

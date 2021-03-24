@@ -1,6 +1,6 @@
 package tile3d
 
-func calcPadding(offset, paddingUnit int) int {
+func calcPadding(offset, paddingUnit uint32) uint32 {
 	padding := offset % paddingUnit
 	if padding != 0 {
 		padding = paddingUnit - padding
@@ -8,20 +8,20 @@ func calcPadding(offset, paddingUnit int) int {
 	return padding
 }
 
-func paddingBytes(bytes []byte, srcLen, paddingUnit int, paddingCode byte) {
-	padding := calcPadding(srcLen, paddingUnit)
+func paddingBytes(bytes []byte, srcLen int, paddingUnit uint32, paddingCode byte) {
+	padding := calcPadding(uint32(srcLen), paddingUnit)
 
-	for i := 0; i < padding; i++ {
-		bytes[srcLen+i] = paddingCode
+	for i := 0; i < int(padding); i++ {
+		bytes[(srcLen)+i] = paddingCode
 	}
 }
 
-func createPaddingBytes(bytes []byte, offset, paddingUnit int, paddingCode byte) []byte {
+func createPaddingBytes(bytes []byte, offset, paddingUnit uint32, paddingCode byte) []byte {
 	padding := calcPadding(offset, paddingUnit)
 	if padding == 0 {
 		return bytes
 	}
-	for i := 0; i < padding; i++ {
+	for i := 0; i < int(padding); i++ {
 		bytes = append(bytes, paddingCode)
 	}
 	return bytes

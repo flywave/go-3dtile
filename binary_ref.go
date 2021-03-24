@@ -68,7 +68,7 @@ func ContainerTypeSize(tp string) int {
 }
 
 type BinaryBodyReference struct {
-	ByteOffset    int    `json:"byteOffset"`
+	ByteOffset    uint32 `json:"byteOffset"`
 	ComponentType string `json:"componentType,omitempty"`
 	ContainerType string `json:"type,omitempty"`
 }
@@ -87,7 +87,7 @@ func (r *BinaryBodyReference) GetMap() map[string]interface{} {
 
 func (r *BinaryBodyReference) FromMap(d map[string]interface{}) {
 	if d[REF_PROP_BYTE_OFFSET] != nil {
-		r.ByteOffset = int(d[REF_PROP_BYTE_OFFSET].(float64))
+		r.ByteOffset = uint32(d[REF_PROP_BYTE_OFFSET].(float64))
 	}
 	if d[REF_PROP_COMPONENT_TYPE] != nil {
 		r.ComponentType = d[REF_PROP_COMPONENT_TYPE].(string)
@@ -97,7 +97,7 @@ func (r *BinaryBodyReference) FromMap(d map[string]interface{}) {
 	}
 }
 
-func createReference(offset int, componentType *string, containerType *string) map[string]interface{} {
+func createReference(offset uint32, componentType *string, containerType *string) map[string]interface{} {
 	reference := make(map[string]interface{})
 	reference[REF_PROP_BYTE_OFFSET] = offset
 	if componentType != nil {
@@ -109,7 +109,7 @@ func createReference(offset int, componentType *string, containerType *string) m
 	return reference
 }
 
-func addReference(jsonHeader *map[string]interface{}, property string, offset int, componentType string, containerType string, feature bool) error {
+func addReference(jsonHeader *map[string]interface{}, property string, offset uint32, componentType string, containerType string, feature bool) error {
 	var reference map[string]interface{}
 	if feature {
 		if "BATCH_ID" == property {
@@ -136,15 +136,15 @@ func addReference(jsonHeader *map[string]interface{}, property string, offset in
 
 type BinaryBodySizeHelper struct {
 	Header *map[string]interface{}
-	Size   int
+	Size   uint32
 }
 
 func (b *BinaryBodySizeHelper) addProperty(property string, data interface{}, componentType string, containerType string, feature bool) {
 	width := ComponentTypeSize(componentType)
-	b.Size += calcPadding(b.Size, width)
+	b.Size += calcPadding(b.Size, uint32(width))
 	addReference(b.Header, property, b.Size, componentType, containerType, feature)
 	unit := ContainerTypeSize(containerType)
-	b.Size += width * unit * len(data.([]interface{}))
+	b.Size += uint32(width) * uint32(unit) * uint32(len(data.([]interface{})))
 }
 
 func (b *BinaryBodySizeHelper) finished() {
@@ -172,12 +172,12 @@ func (b *BinaryBodySizeHelper) addBatchId(array []int64) {
 	}
 }
 
-func (b *BinaryBodySizeHelper) calcHeaderSize(offset int) int {
+func (b *BinaryBodySizeHelper) calcHeaderSize(offset uint32) uint32 {
 	var err error
 	var bs []byte
 	if bs, err = json.Marshal(b.Header); err != nil {
-		return -1
+		return 0
 	}
-	length := len(bs)
+	length := uint32(len(bs))
 	return length + calcPadding(offset+length, 8)
 }

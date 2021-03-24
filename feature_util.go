@@ -48,7 +48,7 @@ func getUnsignedByteArrayFeatureValue(header map[string]interface{}, buff []byte
 	objValue := header[propName]
 	switch oref := objValue.(type) {
 	case BinaryBodyReference:
-		offset := oref.ByteOffset
+		offset := int(oref.ByteOffset)
 		return buff[offset : offset+length]
 	case []byte:
 		return oref
@@ -251,7 +251,7 @@ func getBinaryBodyReference(header map[string]interface{}, propName string) *Bin
 		if offset == nil {
 			return nil
 		}
-		bt.ByteOffset = offset.(int)
+		bt.ByteOffset = offset.(uint32)
 		oct := t[REF_PROP_COMPONENT_TYPE]
 		if oct != nil {
 			bt.ComponentType = oct.(string)
@@ -272,7 +272,7 @@ func getBatchTableValue(header map[string]interface{}, buff []byte, propName str
 
 func getBatchTableValuesFromRef(ref *BinaryBodyReference, buff []byte, propName string, batchLength int) interface{} {
 	if ref != nil {
-		offset := ref.ByteOffset
+		offset := int(ref.ByteOffset)
 		containerSize := ContainerTypeSize(ref.ContainerType)
 		switch ref.ComponentType {
 		case COMPONENT_TYPE_BYTE:
