@@ -27,27 +27,28 @@ func createPaddingBytes(bytes []byte, offset, paddingUnit uint32, paddingCode by
 	return bytes
 }
 
-func zigZag(value uint32) uint16 {
-	return uint16((value << 1) ^ (value>>15)&0xFFFF)
+func encodeZigZag(i int) uint16 {
+	return uint16((i >> 15) ^ (i << 1))
 }
 
-func zigZagDecode(value uint16) uint32 {
-	return uint32(value>>1) ^ uint32(-(value & 1))
+func decodeZigZag(encoded uint16) int {
+	unsignedEncoded := int(encoded)
+	return unsignedEncoded>>1 ^ -(unsignedEncoded & 1)
 }
 
-func encodePolygonPoints(points [][2]uint32) (us, vs []uint16) {
+func encodePolygonPoints(points [][2]int) (us, vs []uint16) {
 	us = make([]uint16, len(points))
 	vs = make([]uint16, len(points))
 
-	lastU := uint32(0)
-	lastV := uint32(0)
+	lastU := int(0)
+	lastV := int(0)
 
 	for i := 0; i < len(points); i++ {
 		u := points[i][0]
 		v := points[i][1]
 
-		us[i] = zigZag(u - lastU)
-		vs[i] = zigZag(v - lastV)
+		us[i] = encodeZigZag(u - lastU)
+		vs[i] = encodeZigZag(v - lastV)
 
 		lastU = u
 		lastV = v
@@ -55,23 +56,23 @@ func encodePolygonPoints(points [][2]uint32) (us, vs []uint16) {
 	return
 }
 
-func encodePoints(points [][3]uint32) (us, vs, hs []uint16) {
+func encodePoints(points [][3]int) (us, vs, hs []uint16) {
 	us = make([]uint16, len(points))
 	vs = make([]uint16, len(points))
 	hs = make([]uint16, len(points))
 
-	lastU := uint32(0)
-	lastV := uint32(0)
-	lastH := uint32(0)
+	lastU := int(0)
+	lastV := int(0)
+	lastH := int(0)
 
 	for i := 0; i < len(points); i++ {
 		u := points[i][0]
 		v := points[i][1]
 		h := points[i][2]
 
-		us[i] = zigZag(u - lastU)
-		vs[i] = zigZag(v - lastV)
-		hs[i] = zigZag(h - lastH)
+		us[i] = encodeZigZag(u - lastU)
+		vs[i] = encodeZigZag(v - lastV)
+		hs[i] = encodeZigZag(h - lastH)
 
 		lastU = u
 		lastV = v
@@ -80,31 +81,31 @@ func encodePoints(points [][3]uint32) (us, vs, hs []uint16) {
 	return
 }
 
-func decodePolygonPoints(us, vs []uint16, pos [][2]uint32) {
-	u := uint32(0)
-	v := uint32(0)
-	pos = make([][2]uint32, len(us))
+func decodePolygonPoints(us, vs []uint16, pos [][2]int) {
+	u := int(0)
+	v := int(0)
+	pos = make([][2]int, len(us))
 
 	for i := 0; i < len(us); i++ {
-		u += zigZagDecode(us[i])
-		v += zigZagDecode(vs[i])
+		u += decodeZigZag(us[i])
+		v += decodeZigZag(vs[i])
 
 		pos[i][0] = u
 		pos[i][1] = v
 	}
 }
 
-func decodePoints(us, vs, hs []uint16, pos [][3]uint32) {
-	u := uint32(0)
-	v := uint32(0)
-	height := uint32(0)
+func decodePoints(us, vs, hs []uint16, pos [][3]int) {
+	u := int(0)
+	v := int(0)
+	height := int(0)
 
-	pos = make([][3]uint32, len(us))
+	pos = make([][3]int, len(us))
 
 	for i := 0; i < len(us); i++ {
-		u += zigZagDecode(us[i])
-		v += zigZagDecode(vs[i])
-		height += zigZagDecode(hs[i])
+		u += decodeZigZag(us[i])
+		v += decodeZigZag(vs[i])
+		height += decodeZigZag(hs[i])
 
 		pos[i][0] = u
 		pos[i][1] = v

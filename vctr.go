@@ -263,7 +263,7 @@ func (m VcrtIndices) Write(writer io.Writer, header Header) error {
 	return nil
 }
 
-type VcrtPolygons [][2]uint32
+type VcrtPolygons [][2]int
 
 func (m VcrtPolygons) encode() (us, vs []uint16) {
 	us, vs = encodePolygonPoints(m)
@@ -315,7 +315,7 @@ func (m VcrtPolygons) Write(writer io.Writer, header Header) error {
 	return nil
 }
 
-type VcrtPolylines [][3]uint32
+type VcrtPolylines [][3]int
 
 func (m VcrtPolylines) encode() (us, vs, hs []uint16) {
 	us, vs, hs = encodePoints(m)
@@ -377,7 +377,7 @@ func (m VcrtPolylines) Write(writer io.Writer, header Header) error {
 	return nil
 }
 
-type VcrtPoints [][3]uint32
+type VcrtPoints [][3]int
 
 func (m VcrtPoints) encode() (us, vs, hs []uint16) {
 	us, vs, hs = encodePoints(m)
