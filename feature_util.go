@@ -11,6 +11,25 @@ var (
 	littleEndian = binary.LittleEndian
 )
 
+func getUnsignedShortBatchIDs(header map[string]interface{}, buff []byte, propName string, length int) []uint16 {
+	objValue := header[propName]
+	switch oref := objValue.(type) {
+	case BinaryBodyReference:
+		offset := oref.ByteOffset
+		buf := bytes.NewBuffer(buff[offset:])
+		switch oref.ComponentType {
+		case "UNSIGNED_SHORT":
+			ret := make([]uint16, length)
+			err := binary.Read(buf, littleEndian, ret)
+			if err != nil {
+				return nil
+			}
+			return ret
+		}
+	}
+	return nil
+}
+
 func getBatchLength(header map[string]interface{}, buff []byte, length int) interface{} {
 	objValue := header["BATCH_ID"]
 	switch oref := objValue.(type) {

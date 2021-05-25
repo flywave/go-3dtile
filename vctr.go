@@ -114,8 +114,8 @@ func (h *VctrHeader) SetPointPositionsByteLength(n uint32) {
 }
 
 type VctrFeatureTableView struct {
-	Region               []float32
-	RtcCenter            []float32
+	Region               *[6]float32
+	RtcCenter            [3]float32
 	PointsLength         uint32
 	PointBatchId         interface{}
 	PolygonsLength       uint32
@@ -130,25 +130,6 @@ type VctrFeatureTableView struct {
 	PolygonCounts        []uint32
 }
 
-func getBatchIDs(header map[string]interface{}, buff []byte, propName string, length int) []uint16 {
-	objValue := header[propName]
-	switch oref := objValue.(type) {
-	case BinaryBodyReference:
-		offset := oref.ByteOffset
-		buf := bytes.NewBuffer(buff[offset:])
-		switch oref.ComponentType {
-		case "UNSIGNED_SHORT":
-			ret := make([]uint16, length)
-			err := binary.Read(buf, littleEndian, ret)
-			if err != nil {
-				return nil
-			}
-			return ret
-		}
-	}
-	return nil
-}
-
 func VctrFeatureTableDecode(header map[string]interface{}, buff []byte) map[string]interface{} {
 	ret := make(map[string]interface{})
 	polygonsLength := getIntegerScalarFeatureValue(header, buff, VCTR_PROP_POLYGONS_LENGTH)
@@ -160,19 +141,19 @@ func VctrFeatureTableDecode(header map[string]interface{}, buff []byte) map[stri
 
 	if pointsLength > 0 {
 		ret[VCTR_PROP_POINTS_LENGTH] = pointsLength
-		ret[VCTR_PROP_POINT_BATCH_IDS] = getBatchIDs(header, buff, VCTR_PROP_POINT_BATCH_IDS, int(pointsLength))
+		ret[VCTR_PROP_POINT_BATCH_IDS] = getUnsignedShortBatchIDs(header, buff, VCTR_PROP_POINT_BATCH_IDS, int(pointsLength))
 	}
 
 	if polylinesLength > 0 {
 		ret[VCTR_PROP_POLYLINES_LENGTH] = polylinesLength
-		ret[VCTR_PROP_POLYLINE_BATCH_IDS] = getBatchIDs(header, buff, VCTR_PROP_POLYLINE_BATCH_IDS, int(polylinesLength))
+		ret[VCTR_PROP_POLYLINE_BATCH_IDS] = getUnsignedShortBatchIDs(header, buff, VCTR_PROP_POLYLINE_BATCH_IDS, int(polylinesLength))
 		ret[VCTR_PROP_POLYLINE_COUNTS] = getUnsignedIntArrayFeatureValue(header, buff, VCTR_PROP_POLYLINE_COUNTS, 1)
 		ret[VCTR_PROP_POLYLINE_WIDTHS] = getUnsignedShortArrayFeatureValue(header, buff, VCTR_PROP_POLYLINE_WIDTHS, int(polygonsLength))
 	}
 
 	if polygonsLength > 0 {
 		ret[VCTR_PROP_POLYGONS_LENGTH] = polygonsLength
-		ret[VCTR_PROP_POLYGON_BATCH_IDS] = getBatchIDs(header, buff, VCTR_PROP_POLYGON_BATCH_IDS, int(polygonsLength))
+		ret[VCTR_PROP_POLYGON_BATCH_IDS] = getUnsignedShortBatchIDs(header, buff, VCTR_PROP_POLYGON_BATCH_IDS, int(polygonsLength))
 		ret[VCTR_PROP_POLYGON_COUNTS] = getUnsignedIntArrayFeatureValue(header, buff, VCTR_PROP_POLYGON_COUNTS, int(polygonsLength))
 		ret[VCTR_PROP_POLYGON_INDEX_COUNTS] = getUnsignedIntArrayFeatureValue(header, buff, VCTR_PROP_POLYGON_INDEX_COUNTS, int(polygonsLength))
 		ret[VCTR_PROP_POLYGON_MAXIMUM_HEIGHTS] = getFloatArrayFeatureValue(header, buff, VCTR_PROP_POLYGON_MAXIMUM_HEIGHTS, int(polygonsLength))
@@ -480,12 +461,10 @@ func (m *Vcrt) SetFeatureTable(view VctrFeatureTableView) {
 	m.FeatureTable.Header[VCTR_PROP_POLYLINES_LENGTH] = view.PolylinesLength
 	m.FeatureTable.Header[VCTR_PROP_POINTS_LENGTH] = view.PointsLength
 
-	if view.RtcCenter != nil && len(view.RtcCenter) == 3 {
-		m.FeatureTable.Header[VCTR_PROP_RTC_CENTER] = view.RtcCenter
-	}
+	m.FeatureTable.Header[VCTR_PROP_RTC_CENTER] = view.RtcCenter[:]
 
 	if view.Region != nil && len(view.Region) == 6 {
-		m.FeatureTable.Header[VCTR_PROP_REGION] = view.Region
+		m.FeatureTable.Header[VCTR_PROP_REGION] = view.Region[:]
 	}
 
 	if view.PointBatchId != nil {
@@ -550,11 +529,11 @@ func (m *Vcrt) GetFeatureTableView() VctrFeatureTableView {
 	}
 
 	if t := m.FeatureTable.Data[VCTR_PROP_RTC_CENTER]; t != nil {
-		ret.RtcCenter = t.([]float32)
+		copy(ret.RtcCenter[:], t.([]float32))
 	}
 
 	if t := m.FeatureTable.Data[VCTR_PROP_REGION]; t != nil {
-		ret.Region = t.([]float32)
+		copy(ret.Region[:], t.([]float32))
 	}
 
 	if t := m.FeatureTable.Data[VCTR_PROP_POINT_BATCH_IDS]; t != nil {
