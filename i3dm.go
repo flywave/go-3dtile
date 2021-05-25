@@ -461,7 +461,7 @@ func (m *I3dm) Read(reader io.ReadSeeker) error {
 func (m *I3dm) Write(writer io.Writer) error {
 	var buf []byte
 	m.FeatureTable.encode = I3dmFeatureTableEncode
-	I3dmFeatureTableEncode(m.FeatureTable.Header, m.FeatureTable.Data)
+	_ = I3dmFeatureTableEncode(m.FeatureTable.Header, m.FeatureTable.Data)
 
 	if m.Header.GltfFormat == 0 {
 		buf = createPaddingBytes([]byte(m.GltfUri), uint32(len(m.GltfUri)), 8, 0x20)

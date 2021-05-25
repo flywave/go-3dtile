@@ -441,7 +441,7 @@ func (m *Pnts) Read(reader io.ReadSeeker) error {
 
 func (m *Pnts) Write(writer io.Writer) error {
 	m.FeatureTable.encode = PntsFeatureTableEncode
-	PntsFeatureTableEncode(m.FeatureTable.Header, m.FeatureTable.Data)
+	_ = PntsFeatureTableEncode(m.FeatureTable.Header, m.FeatureTable.Data)
 	si := m.Header.CalcSize() + m.FeatureTable.CalcSize(m.GetHeader()) + m.BatchTable.CalcSize(m.GetHeader())
 
 	m.Header.ByteLength = uint32(si)

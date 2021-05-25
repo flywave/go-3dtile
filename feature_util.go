@@ -98,6 +98,29 @@ func getUnsignedShortArrayFeatureValue(header map[string]interface{}, buff []byt
 	return nil
 }
 
+func getUnsignedIntArrayFeatureValue(header map[string]interface{}, buff []byte, propName string, length int) []uint32 {
+	objValue := header[propName]
+	switch oref := objValue.(type) {
+	case BinaryBodyReference:
+		buf := bytes.NewBuffer(buff[oref.ByteOffset:])
+		ret := make([]uint32, length)
+		err := binary.Read(buf, littleEndian, ret)
+		if err != nil {
+			return nil
+		}
+		return ret
+	case []float64:
+		ret := make([]uint32, length)
+		for i := 0; i < length; i++ {
+			ret[i] = uint32(oref[i])
+		}
+		return ret
+	case []uint32:
+		return oref
+	}
+	return nil
+}
+
 func getFloatVec3ArrayFeatureValue(header map[string]interface{}, buff []byte, propName string, length int) [][3]float32 {
 	objValue := header[propName]
 	switch oref := objValue.(type) {
@@ -234,6 +257,10 @@ func getFloatArrayFeatureValue(header map[string]interface{}, buff []byte, propN
 		for i := 0; i < length; i++ {
 			ret[i] = float32(oref[i])
 		}
+		return ret
+	case float64:
+		ret := make([]float32, 1)
+		ret[0] = float32(oref)
 		return ret
 	}
 	return nil

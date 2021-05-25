@@ -155,7 +155,7 @@ func (m *B3dm) Read(reader io.ReadSeeker) error {
 
 func (m *B3dm) Write(writer io.Writer) error {
 	m.FeatureTable.encode = B3dmFeatureTableEncode
-	B3dmFeatureTableEncode(m.FeatureTable.Header, m.FeatureTable.Data)
+	_ = B3dmFeatureTableEncode(m.FeatureTable.Header, m.FeatureTable.Data)
 
 	buf, err := getGltfBinary(m.Model, 8)
 	if err != nil {
