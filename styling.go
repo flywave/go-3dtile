@@ -7,6 +7,24 @@ const (
 )
 
 const (
+	OP_ADD        = "+"
+	OP_SUB        = "-"
+	OP_MUL        = "*"
+	OP_DIV        = "/"
+	OP_MOD        = "%"
+	OP_EQ         = "==="
+	OP_NEQ        = "!=="
+	OP_GREATER    = ">"
+	OP_GREATER_EQ = ">="
+	OP_LESS       = "<"
+	OP_LESS_EQ    = "<="
+	OP_AND        = "&&"
+	OP_OR         = "||"
+	OP_REGEXP_NOT = "!~"
+	OP_REGEXP     = "=~"
+)
+
+const (
 	FUNC_IS_NAN             = "isNaN"
 	FUNC_IS_FINITE          = "isFinite"
 	FUNC_IS_EXACTCLASS      = "isExactClass"
@@ -56,111 +74,69 @@ const (
 type ExpressionType int32
 
 const (
-	Boolean   = ExpressionType(0)
-	Null      = ExpressionType(1)
-	Undefined = ExpressionType(2)
-	Number    = ExpressionType(3)
-	String    = ExpressionType(4)
-	Array     = ExpressionType(5)
-	vec2      = ExpressionType(6)
-	vec3      = ExpressionType(7)
-	vec4      = ExpressionType(8)
-	RegExp    = ExpressionType(9)
+	VAR_BOOLEAN   = ExpressionType(0)
+	VAR_NULL      = ExpressionType(1)
+	VAR_UNDEFINED = ExpressionType(2)
+	VAR_NUMBER    = ExpressionType(3)
+	VAR_STRING    = ExpressionType(4)
+	VAR_ARRAY     = ExpressionType(5)
+	VAR_VEC2      = ExpressionType(6)
+	VAR_VEC3      = ExpressionType(7)
+	VAR_VEC4      = ExpressionType(8)
+	VAR_REGEXP    = ExpressionType(9)
 )
 
 type ExpressionNodeType int32
 
 const (
-	VARIABLE           = ExpressionNodeType(0)
-	UNARY              = ExpressionNodeType(1)
-	BINARY             = ExpressionNodeType(2)
-	TERNARY            = ExpressionNodeType(3)
-	CONDITIONAL        = ExpressionNodeType(4)
-	MEMBER             = ExpressionNodeType(5)
-	FUNCTION_CALL      = ExpressionNodeType(6)
-	ARRAY              = ExpressionNodeType(7)
-	REGEX              = ExpressionNodeType(8)
-	VARIABLE_IN_STRING = ExpressionNodeType(9)
-	LITERAL_NULL       = ExpressionNodeType(10)
-	LITERAL_BOOLEAN    = ExpressionNodeType(11)
-	LITERAL_NUMBER     = ExpressionNodeType(12)
-	LITERAL_STRING     = ExpressionNodeType(13)
-	LITERAL_COLOR      = ExpressionNodeType(14)
-	LITERAL_VECTOR     = ExpressionNodeType(15)
-	LITERAL_REGEX      = ExpressionNodeType(16)
-	LITERAL_UNDEFINED  = ExpressionNodeType(17)
-	BUILTIN_VARIABLE   = ExpressionNodeType(18)
+	EXP_VARIABLE           = ExpressionNodeType(0)
+	EXP_UNARY              = ExpressionNodeType(1)
+	EXP_BINARY             = ExpressionNodeType(2)
+	EXP_TERNARY            = ExpressionNodeType(3)
+	EXP_CONDITIONAL        = ExpressionNodeType(4)
+	EXP_MEMBER             = ExpressionNodeType(5)
+	EXP_FUNCTION_CALL      = ExpressionNodeType(6)
+	EXP_ARRAY              = ExpressionNodeType(7)
+	EXP_REGEX              = ExpressionNodeType(8)
+	EXP_VARIABLE_IN_STRING = ExpressionNodeType(9)
+	EXP_LITERAL_NULL       = ExpressionNodeType(10)
+	EXP_LITERAL_BOOLEAN    = ExpressionNodeType(11)
+	EXP_LITERAL_NUMBER     = ExpressionNodeType(12)
+	EXP_LITERAL_STRING     = ExpressionNodeType(13)
+	EXP_LITERAL_COLOR      = ExpressionNodeType(14)
+	EXP_LITERAL_VECTOR     = ExpressionNodeType(15)
+	EXP_LITERAL_REGEX      = ExpressionNodeType(16)
+	EXP_LITERAL_UNDEFINED  = ExpressionNodeType(17)
+	EXP_BUILTIN_VARIABLE   = ExpressionNodeType(18)
 )
 
-const (
-	OP_ADD        = "+"
-	OP_SUB        = "-"
-	OP_MUL        = "*"
-	OP_DIV        = "/"
-	OP_MOD        = "%"
-	OP_EQ         = "==="
-	OP_NEQ        = "!=="
-	OP_GREATER    = ">"
-	OP_GREATER_EQ = ">="
-	OP_LESS       = "<"
-	OP_LESS_EQ    = "<="
-	OP_AND        = "&&"
-	OP_OR         = "||"
-	OP_REGEXP_NOT = "!~"
-	OP_REGEXP     = "=~"
-)
+type Expression string
 
 type Styling struct {
-	Defines                  string `json:"defines"`
-	Show                     string `json:"show"`
-	Color                    string `json:"color"`
-	PointSize                string `json:"pointSize,omitempty"`
-	PointOutlineColor        string `json:"pointOutlineColor,omitempty"`
-	PointOutlineWidth        string `json:"pointOutlineWidth,omitempty"`
-	LabelColor               string `json:"labelColor,omitempty"`
-	LabelOutlineColor        string `json:"labelOutlineColor,omitempty"`
-	LabelOutlineWidth        string `json:"labelOutlineWidth,omitempty"`
-	Font                     string `json:"font,omitempty"`
-	LabelStyle               string `json:"labelStyle,omitempty"`
-	BackgroundColor          string `json:"backgroundColor,omitempty"`
-	BackgroundPadding        string `json:"backgroundPadding,omitempty"`
-	BackgroundEnabled        string `json:"backgroundEnabled,omitempty"`
-	ScaleByDistance          string `json:"scaleByDistance,omitempty"`
-	TranslucencyByDistance   string `json:"translucencyByDistance,omitempty"`
-	DistanceDisplayCondition string `json:"distanceDisplayCondition,omitempty"`
-	HeightOffset             string `json:"heightOffset,omitempty"`
-	AnchorLineEnabled        string `json:"anchorLineEnabled,omitempty"`
-	AnchorLineColor          string `json:"anchorLineColor,omitempty"`
-	Image                    string `json:"image,omitempty"`
-	DisableDepthTestDistance string `json:"disableDepthTestDistance,omitempty"`
-	HorizontalOrigin         string `json:"horizontalOrigin,omitempty"`
-	VerticalOrigin           string `json:"verticalOrigin,omitempty"`
-	LabelHorizontalOrigin    string `json:"labelHorizontalOrigin,omitempty"`
-	LabelVerticalOrigin      string `json:"labelVerticalOrigin,omitempty"`
+	Defines                  Expression `json:"defines"`
+	Show                     Expression `json:"show"`
+	Color                    Expression `json:"color"`
+	PointSize                Expression `json:"pointSize,omitempty"`
+	PointOutlineColor        Expression `json:"pointOutlineColor,omitempty"`
+	PointOutlineWidth        Expression `json:"pointOutlineWidth,omitempty"`
+	LabelColor               Expression `json:"labelColor,omitempty"`
+	LabelOutlineColor        Expression `json:"labelOutlineColor,omitempty"`
+	LabelOutlineWidth        Expression `json:"labelOutlineWidth,omitempty"`
+	Font                     Expression `json:"font,omitempty"`
+	LabelStyle               Expression `json:"labelStyle,omitempty"`
+	BackgroundColor          Expression `json:"backgroundColor,omitempty"`
+	BackgroundPadding        Expression `json:"backgroundPadding,omitempty"`
+	BackgroundEnabled        Expression `json:"backgroundEnabled,omitempty"`
+	ScaleByDistance          Expression `json:"scaleByDistance,omitempty"`
+	TranslucencyByDistance   Expression `json:"translucencyByDistance,omitempty"`
+	DistanceDisplayCondition Expression `json:"distanceDisplayCondition,omitempty"`
+	HeightOffset             Expression `json:"heightOffset,omitempty"`
+	AnchorLineEnabled        Expression `json:"anchorLineEnabled,omitempty"`
+	AnchorLineColor          Expression `json:"anchorLineColor,omitempty"`
+	Image                    Expression `json:"image,omitempty"`
+	DisableDepthTestDistance Expression `json:"disableDepthTestDistance,omitempty"`
+	HorizontalOrigin         Expression `json:"horizontalOrigin,omitempty"`
+	VerticalOrigin           Expression `json:"verticalOrigin,omitempty"`
+	LabelHorizontalOrigin    Expression `json:"labelHorizontalOrigin,omitempty"`
+	LabelVerticalOrigin      Expression `json:"labelVerticalOrigin,omitempty"`
 }
-
-type Condition [2]string
-type Conditions []Condition
-type Defines map[string]string
-type Meta map[string]string
-
-type StyleExpression interface{}
-
-type Expression struct {
-}
-
-type ConditionsExpression struct{}
-
-type Operator interface{}
-
-type UnaryOperators struct{}
-
-type BinaryOperators struct{}
-
-type Function interface{}
-
-type UnaryFunction struct{}
-
-type BinaryFunction struct{}
-
-type TernaryFunctions struct{}
