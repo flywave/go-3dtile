@@ -315,7 +315,7 @@ func (m VctrPolygons) Write(writer io.Writer, header Header) error {
 	return nil
 }
 
-type VctrPolylines [][3]int
+type VctrPolylines [][2]int16
 
 func (m VctrPolylines) encode() (us, vs, hs []uint16) {
 	us, vs, hs = encodePoints(m)
@@ -328,7 +328,7 @@ func (m VctrPolylines) decode(us, vs, hs []uint16) {
 }
 
 func (m VctrPolylines) CalcSize(header Header) int64 {
-	return int64(len(m) * 3 * 2)
+	return int64(len(m) * 2 * 2)
 }
 
 func (m VctrPolylines) Read(reader io.ReadSeeker, header Header) error {
@@ -345,10 +345,7 @@ func (m VctrPolylines) Read(reader io.ReadSeeker, header Header) error {
 	if err != nil {
 		return err
 	}
-	err = binary.Read(reader, littleEndian, hs)
-	if err != nil {
-		return err
-	}
+
 	m.decode(us, vs, hs)
 	return nil
 }
@@ -377,7 +374,7 @@ func (m VctrPolylines) Write(writer io.Writer, header Header) error {
 	return nil
 }
 
-type VctrPoints [][3]int
+type VctrPoints [][2]int16
 
 func (m VctrPoints) encode() (us, vs, hs []uint16) {
 	us, vs, hs = encodePoints(m)
@@ -390,7 +387,7 @@ func (m VctrPoints) decode(us, vs, hs []uint16) {
 }
 
 func (m VctrPoints) CalcSize(header Header) int64 {
-	return int64(len(m) * 3 * 2)
+	return int64(len(m) * 2 * 2)
 }
 
 func (m VctrPoints) Read(reader io.ReadSeeker, header Header) error {
