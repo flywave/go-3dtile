@@ -235,23 +235,25 @@ func VctrFeatureTableEncode(header map[string]interface{}, data map[string]inter
 	return buf.Bytes()
 }
 
-type VctrIndices [][3]uint32
-
-func (m VctrIndices) CalcSize(header Header) int64 {
-	return int64(len(m) * 3 * 4)
+type VctrIndices struct {
+	p [][3]uint32
 }
 
-func (m VctrIndices) Read(reader io.ReadSeeker, header Header) error {
+func (m *VctrIndices) CalcSize(header Header) int64 {
+	return int64(len(m.p) * 3 * 4)
+}
+
+func (m *VctrIndices) Read(reader io.ReadSeeker, header Header) error {
 	ch := header.(*VctrHeader)
-	m = make([][3]uint32, int(ch.GetPolygonIndicesByteLength()/3/4))
-	err := binary.Read(reader, littleEndian, m)
+	m.p = make([][3]uint32, int(ch.GetPolygonIndicesByteLength()/3/4))
+	err := binary.Read(reader, littleEndian, m.p)
 	if err != nil {
 		return err
 	}
 	return nil
 }
 
-func (m VctrIndices) Write(writer io.Writer, header Header) error {
+func (m *VctrIndices) Write(writer io.Writer, header Header) error {
 	err := binary.Write(writer, littleEndian, m)
 
 	if err != nil {
@@ -620,7 +622,7 @@ func (m *Vctr) GetPoints() VctrPoints {
 func (m *Vctr) CalcSize() int64 {
 	si := m.Header.CalcSize() + m.FeatureTable.CalcSize(m.GetHeader()) + m.BatchTable.CalcSize(m.GetHeader())
 
-	if m.Indices != nil {
+	if m.Indices.p != nil {
 		si += m.Indices.CalcSize(m.GetHeader())
 	}
 
@@ -694,7 +696,7 @@ func (m *Vctr) Write(writer io.Writer) error {
 		return err
 	}
 
-	if m.Indices != nil {
+	if m.Indices.p != nil {
 		if err := m.Indices.Write(writer, nil); err != nil {
 			return err
 		}
