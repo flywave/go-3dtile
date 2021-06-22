@@ -81,10 +81,10 @@ func encodePoints(points [][3]int) (us, vs, hs []uint16) {
 	return
 }
 
-func decodePolygonPoints(us, vs []uint16, pos [][2]int) {
+func decodePolygonPoints(us, vs []uint16) [][2]int {
 	u := int(0)
 	v := int(0)
-	pos = make([][2]int, len(us))
+	pos := make([][2]int, len(us))
 
 	for i := 0; i < len(us); i++ {
 		u += decodeZigZag(us[i])
@@ -93,14 +93,15 @@ func decodePolygonPoints(us, vs []uint16, pos [][2]int) {
 		pos[i][0] = u
 		pos[i][1] = v
 	}
+	return pos
 }
 
-func decodePoints(us, vs, hs []uint16, pos [][3]int) {
+func decodePoints(us, vs, hs []uint16) [][3]int {
 	u := int(0)
 	v := int(0)
 	height := int(0)
 
-	pos = make([][3]int, len(us))
+	pos := make([][3]int, len(us))
 
 	for i := 0; i < len(us); i++ {
 		u += decodeZigZag(us[i])
@@ -111,5 +112,5 @@ func decodePoints(us, vs, hs []uint16, pos [][3]int) {
 		pos[i][1] = v
 		pos[i][2] = height
 	}
-	return
+	return pos
 }
