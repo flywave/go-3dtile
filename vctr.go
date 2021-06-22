@@ -3,6 +3,7 @@ package tile3d
 import (
 	"bytes"
 	"encoding/binary"
+	"fmt"
 	"io"
 )
 
@@ -263,23 +264,28 @@ func (m VctrIndices) Write(writer io.Writer, header Header) error {
 	return nil
 }
 
-type VctrPolygons [][2]int
+type VctrPolygons struct {
+	p [][2]int
+}
 
-func (m VctrPolygons) encode() (us, vs []uint16) {
-	us, vs = encodePolygonPoints(m)
+func (m *VctrPolygons) Add(pt [2]int) {
+	m.p = append(m.p, pt)
+}
+
+func (m *VctrPolygons) encode() (us, vs []uint16) {
+	us, vs = encodePolygonPoints(m.p)
 	return
 }
 
-func (m VctrPolygons) decode(us, vs []uint16) {
-	decodePolygonPoints(us, vs, m)
-	return
+func (m *VctrPolygons) decode(us, vs []uint16) {
+	m.p = decodePolygonPoints(us, vs)
 }
 
-func (m VctrPolygons) CalcSize(header Header) int64 {
-	return int64(len(m) * 2 * 2)
+func (m *VctrPolygons) CalcSize(header Header) int64 {
+	return int64(len(m.p) * 2 * 2)
 }
 
-func (m VctrPolygons) Read(reader io.ReadSeeker, header Header) error {
+func (m *VctrPolygons) Read(reader io.ReadSeeker, header Header) error {
 	ch := header.(*VctrHeader)
 	us := make([]uint16, int(ch.GetPolygonPositionsByteLength()/2/4))
 	vs := make([]uint16, int(ch.GetPolygonPositionsByteLength()/2/4))
@@ -296,7 +302,7 @@ func (m VctrPolygons) Read(reader io.ReadSeeker, header Header) error {
 	return nil
 }
 
-func (m VctrPolygons) Write(writer io.Writer, header Header) error {
+func (m *VctrPolygons) Write(writer io.Writer, header Header) error {
 	us, vs := m.encode()
 	err := binary.Write(writer, littleEndian, us)
 
@@ -315,23 +321,28 @@ func (m VctrPolygons) Write(writer io.Writer, header Header) error {
 	return nil
 }
 
-type VctrPolylines [][2]int16
+type VctrPolylines struct {
+	p [][3]int
+}
 
-func (m VctrPolylines) encode() (us, vs, hs []uint16) {
-	us, vs, hs = encodePoints(m)
+func (m *VctrPolylines) Add(pt [3]int) {
+	m.p = append(m.p, pt)
+}
+
+func (m *VctrPolylines) encode() (us, vs, hs []uint16) {
+	us, vs, hs = encodePoints(m.p)
 	return
 }
 
-func (m VctrPolylines) decode(us, vs, hs []uint16) {
-	decodePoints(us, vs, hs, m)
-	return
+func (m *VctrPolylines) decode(us, vs, hs []uint16) {
+	m.p = decodePoints(us, vs, hs)
 }
 
-func (m VctrPolylines) CalcSize(header Header) int64 {
-	return int64(len(m) * 2 * 2)
+func (m *VctrPolylines) CalcSize(header Header) int64 {
+	return int64(len(m.p) * 3 * 2)
 }
 
-func (m VctrPolylines) Read(reader io.ReadSeeker, header Header) error {
+func (m *VctrPolylines) Read(reader io.ReadSeeker, header Header) error {
 	ch := header.(*VctrHeader)
 	us := make([]uint16, int(ch.GetPolylinePositionsByteLength()/2/4))
 	vs := make([]uint16, int(ch.GetPolylinePositionsByteLength()/2/4))
@@ -350,7 +361,7 @@ func (m VctrPolylines) Read(reader io.ReadSeeker, header Header) error {
 	return nil
 }
 
-func (m VctrPolylines) Write(writer io.Writer, header Header) error {
+func (m *VctrPolylines) Write(writer io.Writer, header Header) error {
 	us, vs, hs := m.encode()
 	err := binary.Write(writer, littleEndian, us)
 
@@ -374,30 +385,36 @@ func (m VctrPolylines) Write(writer io.Writer, header Header) error {
 	return nil
 }
 
-type VctrPoints [][2]int16
+type VctrPoints struct {
+	p [][3]int
+}
 
-func (m VctrPoints) encode() (us, vs, hs []uint16) {
-	us, vs, hs = encodePoints(m)
+func (m *VctrPoints) Add(pt [3]int) {
+	m.p = append(m.p, pt)
+}
+
+func (m *VctrPoints) encode() (us, vs, hs []uint16) {
+	us, vs, hs = encodePoints(m.p)
 	return
 }
 
-func (m VctrPoints) decode(us, vs, hs []uint16) {
-	decodePoints(us, vs, hs, m)
-	return
+func (m *VctrPoints) decode(us, vs, hs []uint16) {
+	m.p = decodePoints(us, vs, hs)
 }
 
-func (m VctrPoints) CalcSize(header Header) int64 {
-	return int64(len(m) * 2 * 2)
+func (m *VctrPoints) CalcSize(header Header) int64 {
+	return int64(len(m.p) * 3 * 2)
 }
 
-func (m VctrPoints) Read(reader io.ReadSeeker, header Header) error {
+func (m *VctrPoints) Read(reader io.ReadSeeker, header Header) error {
 	ch := header.(*VctrHeader)
-	us := make([]uint16, int(ch.GetPolylinePositionsByteLength()/2/4))
-	vs := make([]uint16, int(ch.GetPolylinePositionsByteLength()/2/4))
-	hs := make([]uint16, int(ch.GetPolylinePositionsByteLength()/2/4))
+	us := make([]uint16, int(ch.PointPositionsByteLength/2/3))
+	vs := make([]uint16, int(ch.PointPositionsByteLength/2/3))
+	hs := make([]uint16, int(ch.PointPositionsByteLength/2/3))
 
 	err := binary.Read(reader, littleEndian, us)
 	if err != nil {
+		fmt.Println(err.Error())
 		return err
 	}
 	err = binary.Read(reader, littleEndian, vs)
@@ -412,7 +429,7 @@ func (m VctrPoints) Read(reader io.ReadSeeker, header Header) error {
 	return nil
 }
 
-func (m VctrPoints) Write(writer io.Writer, header Header) error {
+func (m *VctrPoints) Write(writer io.Writer, header Header) error {
 	us, vs, hs := m.encode()
 	err := binary.Write(writer, littleEndian, us)
 
@@ -431,7 +448,7 @@ func (m VctrPoints) Write(writer io.Writer, header Header) error {
 	}
 	if header != nil {
 		ch := header.(*VctrHeader)
-		ch.SetPolylinePositionsByteLength(uint32(m.CalcSize(header)))
+		ch.PointPositionsByteLength = uint32(m.CalcSize(header))
 	}
 	return nil
 }
@@ -607,15 +624,15 @@ func (m *Vctr) CalcSize() int64 {
 		si += m.Indices.CalcSize(m.GetHeader())
 	}
 
-	if m.Polygons != nil {
+	if m.Polygons.p != nil {
 		si += m.Polygons.CalcSize(m.GetHeader())
 	}
 
-	if m.Polylines != nil {
+	if m.Polylines.p != nil {
 		si += m.Polylines.CalcSize(m.GetHeader())
 	}
 
-	if m.Points != nil {
+	if m.Points.p != nil {
 		si += m.Points.CalcSize(m.GetHeader())
 	}
 	return si
@@ -683,19 +700,19 @@ func (m *Vctr) Write(writer io.Writer) error {
 		}
 	}
 
-	if m.Polygons != nil {
+	if m.Polygons.p != nil {
 		if err := m.Polygons.Write(writer, nil); err != nil {
 			return err
 		}
 	}
 
-	if m.Polylines != nil {
+	if m.Polylines.p != nil {
 		if err := m.Polylines.Write(writer, nil); err != nil {
 			return err
 		}
 	}
 
-	if m.Points != nil {
+	if m.Points.p != nil {
 		if err := m.Points.Write(writer, nil); err != nil {
 			return err
 		}
