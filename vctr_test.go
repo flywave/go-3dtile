@@ -7,7 +7,7 @@ import (
 )
 
 func TestRead(t *testing.T) {
-	path := "./data/tile.vctr"
+	path := "./data/parent_batchtable.vctr"
 	rd, _ := os.Open(path)
 	vt := &Vctr{}
 	vt.Read(rd)
