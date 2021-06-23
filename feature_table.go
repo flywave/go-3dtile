@@ -64,8 +64,8 @@ func (h *FeatureTable) CalcSize(header Header) int64 {
 }
 
 func (h *FeatureTable) GetBatchLength() int {
-	if h.Header["BATCH_LENGTH"] != nil {
-		switch d := h.Header["BATCH_LENGTH"].(type) {
+	if h.Data["BATCH_LENGTH"] != nil {
+		switch d := h.Data["BATCH_LENGTH"].(type) {
 		case int:
 			return d
 		case float64:
