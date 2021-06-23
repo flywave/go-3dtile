@@ -7,7 +7,7 @@ import (
 )
 
 func TestRead(t *testing.T) {
-	path := "./data/tile.vctr"
+	path := "./data/polygon_children.vctr"
 	rd, _ := os.Open(path)
 	vt := &Vctr{}
 	vt.Read(rd)
