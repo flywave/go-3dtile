@@ -12,17 +12,22 @@ const (
 )
 
 const (
-	VCTR_PROP_POLYGONS_LENGTH         = "POLYGONS_LENGTH"
-	VCTR_PROP_POLYLINES_LENGTH        = "POLYLINES_LENGTH"
-	VCTR_PROP_POINTS_LENGTH           = "POINTS_LENGTH"
-	VCTR_PROP_REGION                  = "REGION"
-	VCTR_PROP_RTC_CENTER              = "RTC_CENTER"
-	VCTR_PROP_POLYGON_COUNTS          = "POLYGON_COUNTS"
-	VCTR_PROP_POLYGON_INDEX_COUNTS    = "POLYGON_INDEX_COUNTS"
+	VCTR_PROP_POLYGONS_LENGTH  = "POLYGONS_LENGTH"
+	VCTR_PROP_POLYLINES_LENGTH = "POLYLINES_LENGTH"
+	VCTR_PROP_POINTS_LENGTH    = "POINTS_LENGTH"
+	VCTR_PROP_REGION           = "REGION"
+	VCTR_PROP_RTC_CENTER       = "RTC_CENTER"
+
+	VCTR_PROP_POLYGON_COUNTS       = "POLYGON_COUNTS"
+	VCTR_PROP_POLYGON_COUNT        = "POLYGON_COUNT"
+	VCTR_PROP_POLYGON_INDEX_COUNTS = "POLYGON_INDEX_COUNTS"
+	VCTR_PROP_POLYGON_INDEX_COUNT  = "POLYGON_INDEX_COUNT"
+	VCTR_PROP_POLYLINE_COUNTS      = "POLYLINE_COUNTS"
+	VCTR_PROP_POLYLINE_COUNT       = "POLYLINE_COUNT"
+
 	VCTR_PROP_POLYGON_MINIMUM_HEIGHTS = "POLYGON_MINIMUM_HEIGHTS"
 	VCTR_PROP_POLYGON_MAXIMUM_HEIGHTS = "POLYGON_MAXIMUM_HEIGHTS"
 	VCTR_PROP_POLYGON_BATCH_IDS       = "POLYGON_BATCH_IDS"
-	VCTR_PROP_POLYLINE_COUNTS         = "POLYLINE_COUNTS"
 	VCTR_PROP_POLYLINE_WIDTHS         = "POLYLINE_WIDTHS"
 	VCTR_PROP_POLYLINE_BATCH_IDS      = "POLYLINE_BATCH_IDS"
 	VCTR_PROP_POINT_BATCH_IDS         = "POINT_BATCH_IDS"
@@ -149,6 +154,7 @@ func VctrFeatureTableDecode(header map[string]interface{}, buff []byte) map[stri
 		ret[VCTR_PROP_POLYLINES_LENGTH] = polylinesLength
 		ret[VCTR_PROP_POLYLINE_BATCH_IDS] = getUnsignedShortBatchIDs(header, buff, VCTR_PROP_POLYLINE_BATCH_IDS, int(polylinesLength))
 		ret[VCTR_PROP_POLYLINE_COUNTS] = getUnsignedIntArrayFeatureValue(header, buff, VCTR_PROP_POLYLINE_COUNTS, 1)
+		ret[VCTR_PROP_POLYLINE_COUNT] = getUnsignedIntArrayFeatureValue(header, buff, VCTR_PROP_POLYLINE_COUNT, 1)
 		ret[VCTR_PROP_POLYLINE_WIDTHS] = getUnsignedShortArrayFeatureValue(header, buff, VCTR_PROP_POLYLINE_WIDTHS, int(polygonsLength))
 	}
 
@@ -156,7 +162,10 @@ func VctrFeatureTableDecode(header map[string]interface{}, buff []byte) map[stri
 		ret[VCTR_PROP_POLYGONS_LENGTH] = polygonsLength
 		ret[VCTR_PROP_POLYGON_BATCH_IDS] = getUnsignedShortBatchIDs(header, buff, VCTR_PROP_POLYGON_BATCH_IDS, int(polygonsLength))
 		ret[VCTR_PROP_POLYGON_COUNTS] = getUnsignedIntArrayFeatureValue(header, buff, VCTR_PROP_POLYGON_COUNTS, int(polygonsLength))
+		ret[VCTR_PROP_POLYGON_COUNT] = getUnsignedIntArrayFeatureValue(header, buff, VCTR_PROP_POLYGON_COUNT, int(polygonsLength))
 		ret[VCTR_PROP_POLYGON_INDEX_COUNTS] = getUnsignedIntArrayFeatureValue(header, buff, VCTR_PROP_POLYGON_INDEX_COUNTS, int(polygonsLength))
+		ret[VCTR_PROP_POLYGON_INDEX_COUNT] = getUnsignedIntArrayFeatureValue(header, buff, VCTR_PROP_POLYGON_INDEX_COUNT, int(polygonsLength))
+
 		ret[VCTR_PROP_POLYGON_MAXIMUM_HEIGHTS] = getFloatArrayFeatureValue(header, buff, VCTR_PROP_POLYGON_MAXIMUM_HEIGHTS, int(polygonsLength))
 		ret[VCTR_PROP_POLYGON_MINIMUM_HEIGHTS] = getFloatArrayFeatureValue(header, buff, VCTR_PROP_POLYGON_MINIMUM_HEIGHTS, int(polygonsLength))
 	}
@@ -639,7 +648,7 @@ func (m *Vctr) Read(reader io.ReadSeeker) error {
 		return err
 	}
 
-	m.FeatureTable.decode = PntsFeatureTableDecode
+	m.FeatureTable.decode = VctrFeatureTableDecode
 
 	if err := m.FeatureTable.Read(reader, m.GetHeader()); err != nil {
 		return err

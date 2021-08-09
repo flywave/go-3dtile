@@ -7,9 +7,12 @@ import (
 )
 
 func TestRead(t *testing.T) {
-	path := "./data/parent_batchtable.vctr"
+	path := "./data/vctr/1/1/0.vctr"
 	rd, _ := os.Open(path)
 	vt := &Vctr{}
 	vt.Read(rd)
-	fmt.Println(vt)
+	ft := vt.GetFeatureTable()
+	fmt.Println(ft)
+	bt := vt.GetBatchTable()
+	fmt.Println(bt)
 }
