@@ -153,8 +153,8 @@ func VctrFeatureTableDecode(header map[string]interface{}, buff []byte) map[stri
 	if polylinesLength > 0 {
 		ret[VCTR_PROP_POLYLINES_LENGTH] = polylinesLength
 		ret[VCTR_PROP_POLYLINE_BATCH_IDS] = getUnsignedShortBatchIDs(header, buff, VCTR_PROP_POLYLINE_BATCH_IDS, int(polylinesLength))
-		ret[VCTR_PROP_POLYLINE_COUNTS] = getUnsignedIntArrayFeatureValue(header, buff, VCTR_PROP_POLYLINE_COUNTS, 1)
-		ret[VCTR_PROP_POLYLINE_COUNT] = getUnsignedIntArrayFeatureValue(header, buff, VCTR_PROP_POLYLINE_COUNT, 1)
+		ret[VCTR_PROP_POLYLINE_COUNTS] = getUnsignedIntArrayFeatureValue(header, buff, VCTR_PROP_POLYLINE_COUNTS, int(polylinesLength))
+		ret[VCTR_PROP_POLYLINE_COUNT] = getUnsignedIntArrayFeatureValue(header, buff, VCTR_PROP_POLYLINE_COUNT, int(polylinesLength))
 		ret[VCTR_PROP_POLYLINE_WIDTHS] = getUnsignedShortArrayFeatureValue(header, buff, VCTR_PROP_POLYLINE_WIDTHS, int(polygonsLength))
 	}
 
@@ -248,6 +248,10 @@ type VctrIndices struct {
 	p [][3]uint32
 }
 
+func (m *VctrIndices) Add(pt [3]uint32) {
+	m.p = append(m.p, pt)
+}
+
 func (m VctrIndices) CalcSize(header Header) uint32 {
 	ct := uint32(len(m.p) * 3 * 4)
 	header.(*VctrHeader).PolygonIndicesByteLength = ct
@@ -265,7 +269,7 @@ func (m *VctrIndices) Read(reader io.ReadSeeker, header Header) error {
 }
 
 func (m *VctrIndices) Write(writer io.Writer, header Header) error {
-	err := binary.Write(writer, littleEndian, m)
+	err := binary.Write(writer, littleEndian, m.p)
 
 	if err != nil {
 		return err
@@ -298,8 +302,8 @@ func (m *VctrPolygons) CalcSize(header Header) uint32 {
 
 func (m *VctrPolygons) Read(reader io.ReadSeeker, header Header) error {
 	ch := header.(*VctrHeader)
-	us := make([]uint16, int(ch.GetPolygonPositionsByteLength()/2/4))
-	vs := make([]uint16, int(ch.GetPolygonPositionsByteLength()/2/4))
+	us := make([]uint16, int(ch.GetPolygonPositionsByteLength()/2/2))
+	vs := make([]uint16, int(ch.GetPolygonPositionsByteLength()/2/2))
 
 	err := binary.Read(reader, littleEndian, us)
 	if err != nil {
