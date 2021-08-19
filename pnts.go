@@ -19,7 +19,7 @@ const (
 	PNTS_PROP_QUANTIZED_VOLUME_SCALE  = "QUANTIZED_VOLUME_SCALE"
 	PNTS_PROP_NORMAL                  = "NORMAL"
 	PNTS_PROP_NORMAL_OCT32P           = "NORMAL_OCT32P"
-	PNTS_PROP_POSITION_LENGTH         = "POSITION_LENGTH"
+	PNTS_PROP_POINTS_LENGTH           = "POINTS_LENGTH"
 	PNTS_PROP_CONSTANT_RGBA           = "CONSTANT_RGBA"
 	PNTS_PROP_RGB                     = "RGB"
 	PNTS_PROP_RGBA                    = "RGBA"
@@ -103,8 +103,8 @@ type PntsFeatureTableView struct {
 
 func PntsFeatureTableDecode(header map[string]interface{}, buff []byte) map[string]interface{} {
 	ret := make(map[string]interface{})
-	pointsLength := getIntegerScalarFeatureValue(header, buff, PNTS_PROP_POSITION_LENGTH)
-	ret[PNTS_PROP_POSITION_LENGTH] = pointsLength
+	pointsLength := getIntegerScalarFeatureValue(header, buff, PNTS_PROP_POINTS_LENGTH)
+	ret[PNTS_PROP_POINTS_LENGTH] = pointsLength
 	ret[PNTS_PROP_BATCH_LENGTH] = getFloatVec3FeatureValue(header, buff, PNTS_PROP_BATCH_LENGTH)
 	ret[PNTS_PROP_QUANTIZED_VOLUME_OFFSET] = getFloatVec3FeatureValue(header, buff, PNTS_PROP_QUANTIZED_VOLUME_OFFSET)
 	ret[PNTS_PROP_QUANTIZED_VOLUME_SCALE] = getFloatVec3FeatureValue(header, buff, PNTS_PROP_QUANTIZED_VOLUME_SCALE)
@@ -250,6 +250,17 @@ type Pnts struct {
 	BatchTable   BatchTable
 }
 
+func NewPnts() *Pnts {
+	m := &Pnts{}
+	m.FeatureTable.Header = make(map[string]interface{})
+	mg := []byte(PNTS_MAGIC)
+	m.Header.Magic[0] = mg[0]
+	m.Header.Magic[1] = mg[1]
+	m.Header.Magic[2] = mg[2]
+	m.Header.Magic[3] = mg[3]
+	return m
+}
+
 func (m *Pnts) SetFeatureTable(view PntsFeatureTableView) {
 	if m.FeatureTable.Header == nil {
 		m.FeatureTable.Header = make(map[string]interface{})
@@ -326,7 +337,7 @@ func (m *Pnts) SetFeatureTable(view PntsFeatureTableView) {
 		}
 	}
 
-	m.FeatureTable.Header[PNTS_PROP_POSITION_LENGTH] = view.PointsLength
+	m.FeatureTable.Header[PNTS_PROP_POINTS_LENGTH] = view.PointsLength
 	if view.RtcCenter != nil && len(view.RtcCenter) == 3 {
 		m.FeatureTable.Header[PNTS_PROP_RTC_CENTER] = view.RtcCenter
 	}
@@ -379,7 +390,7 @@ func (m *Pnts) GetFeatureTableView() PntsFeatureTableView {
 		ret.BatchId = m.FeatureTable.Data[PNTS_PROP_BATCH_ID]
 	}
 
-	ret.PointsLength = m.FeatureTable.Header[PNTS_PROP_POSITION_LENGTH].(uint32)
+	ret.PointsLength = m.FeatureTable.Header[PNTS_PROP_POINTS_LENGTH].(uint32)
 
 	if m.FeatureTable.Header[PNTS_PROP_RTC_CENTER] != nil {
 		ret.RtcCenter = m.FeatureTable.Header[PNTS_PROP_RTC_CENTER].([]float32)

@@ -90,6 +90,11 @@ func NewB3dm() *B3dm {
 	m := &B3dm{}
 	m.FeatureTable.Header = make(map[string]interface{})
 	m.FeatureTable.Header[B3DM_PROP_BATCH_LENGTH] = 0
+	mg := []byte(B3DM_MAGIC)
+	m.Header.Magic[0] = mg[0]
+	m.Header.Magic[1] = mg[1]
+	m.Header.Magic[2] = mg[2]
+	m.Header.Magic[3] = mg[3]
 	return m
 }
 
