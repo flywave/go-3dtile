@@ -105,21 +105,38 @@ func PntsFeatureTableDecode(header map[string]interface{}, buff []byte) map[stri
 	ret := make(map[string]interface{})
 	pointsLength := getIntegerScalarFeatureValue(header, buff, PNTS_PROP_POINTS_LENGTH)
 	ret[PNTS_PROP_POINTS_LENGTH] = pointsLength
-	ret[PNTS_PROP_BATCH_LENGTH] = getFloatVec3FeatureValue(header, buff, PNTS_PROP_BATCH_LENGTH)
-	ret[PNTS_PROP_QUANTIZED_VOLUME_OFFSET] = getFloatVec3FeatureValue(header, buff, PNTS_PROP_QUANTIZED_VOLUME_OFFSET)
-	ret[PNTS_PROP_QUANTIZED_VOLUME_SCALE] = getFloatVec3FeatureValue(header, buff, PNTS_PROP_QUANTIZED_VOLUME_SCALE)
+	if _, ok := header[PNTS_PROP_BATCH_LENGTH]; ok {
+		ret[PNTS_PROP_BATCH_LENGTH] = getFloatVec3FeatureValue(header, buff, PNTS_PROP_BATCH_LENGTH)
+	}
+
 	constantRgba := getUnsignedByteArrayFeatureValue(header, buff, PNTS_PROP_CONSTANT_RGBA, 4)
 	if constantRgba != nil {
 		ret[PNTS_PROP_CONSTANT_RGBA] = constantRgba
 	}
 
-	floatArrayValue := getFloatArrayFeatureValue(header, buff, I3DM_PROP_POSITION, int(pointsLength*3))
-	if floatArrayValue != nil {
-		ret[I3DM_PROP_POSITION] = floatArrayValue
+	rgba := getUnsignedByteArrayFeatureValue(header, buff, PNTS_PROP_RGBA, 3)
+	if rgba != nil {
+		ret[PNTS_PROP_RGBA] = rgba
 	}
-	unsignedShortArrayValue := getUnsignedShortArrayFeatureValue(header, buff, I3DM_PROP_POSITION_QUANTIZED, int(pointsLength*3))
+
+	rgb := getUnsignedByteArrayFeatureValue(header, buff, PNTS_PROP_RGB, 3)
+	if rgb != nil {
+		ret[PNTS_PROP_RGB] = rgb
+	}
+
+	floatArrayValue := getFloatArrayFeatureValue(header, buff, PNTS_PROP_POSITION, int(pointsLength*3))
+	if floatArrayValue != nil {
+		ret[PNTS_PROP_POSITION] = floatArrayValue
+	}
+	unsignedShortArrayValue := getUnsignedShortArrayFeatureValue(header, buff, PNTS_PROP_POSITION_QUANTIZED, int(pointsLength*3))
 	if unsignedShortArrayValue != nil {
-		ret[I3DM_PROP_POSITION_QUANTIZED] = unsignedShortArrayValue
+		ret[PNTS_PROP_POSITION_QUANTIZED] = unsignedShortArrayValue
+	}
+	if _, ok := header[PNTS_PROP_QUANTIZED_VOLUME_OFFSET]; ok {
+		ret[PNTS_PROP_QUANTIZED_VOLUME_OFFSET] = getFloatVec3FeatureValue(header, buff, PNTS_PROP_QUANTIZED_VOLUME_OFFSET)
+	}
+	if _, ok := header[PNTS_PROP_QUANTIZED_VOLUME_SCALE]; ok {
+		ret[PNTS_PROP_QUANTIZED_VOLUME_SCALE] = getFloatVec3FeatureValue(header, buff, PNTS_PROP_QUANTIZED_VOLUME_SCALE)
 	}
 
 	reference := getBinaryBodyReference(header, PNTS_PROP_RGBA)
@@ -178,8 +195,8 @@ func PntsFeatureTableEncode(header map[string]interface{}, data map[string]inter
 	if t := data[PNTS_PROP_POSITION]; t != nil {
 		dt := t.([][3]float32)
 		binary.Write(buf, littleEndian, dt)
-		header[PNTS_PROP_POSITION] = BinaryBodyReference{ByteOffset: uint32(offset), ComponentType: COMPONENT_TYPE_DOUBLE, ContainerType: CONTAINER_TYPE_VEC3}
-		offset += (len(dt) * 3 * 8)
+		header[PNTS_PROP_POSITION] = BinaryBodyReference{ByteOffset: uint32(offset), ComponentType: COMPONENT_TYPE_FLOAT, ContainerType: CONTAINER_TYPE_VEC3}
+		offset += (len(dt) * 3 * 4)
 	}
 
 	if t := data[PNTS_PROP_POSITION_QUANTIZED]; t != nil {
@@ -225,7 +242,7 @@ func PntsFeatureTableEncode(header map[string]interface{}, data map[string]inter
 	}
 
 	if data[PNTS_PROP_BATCH_ID] != nil {
-		switch dt := data[I3DM_PROP_BATCH_ID].(type) {
+		switch dt := data[PNTS_PROP_BATCH_ID].(type) {
 		case []uint8:
 			binary.Write(buf, littleEndian, dt)
 			header[PNTS_PROP_BATCH_ID] = BinaryBodyReference{ByteOffset: uint32(offset), ComponentType: COMPONENT_TYPE_UNSIGNED_BYTE}
@@ -271,30 +288,31 @@ func (m *Pnts) SetFeatureTable(view PntsFeatureTableView) {
 	m.FeatureTable.Header[PNTS_PROP_POSITION] = BinaryBodyReference{ComponentType: COMPONENT_TYPE_FLOAT, ContainerType: CONTAINER_TYPE_VEC3}
 	m.FeatureTable.Data[PNTS_PROP_POSITION] = view.Position
 
-	m.FeatureTable.Header[PNTS_PROP_POSITION_QUANTIZED] = BinaryBodyReference{ComponentType: COMPONENT_TYPE_UNSIGNED_SHORT, ContainerType: CONTAINER_TYPE_VEC3}
-	m.FeatureTable.Data[PNTS_PROP_POSITION_QUANTIZED] = view.PositionQuantized
-
-	if view.RGBA != nil {
+	if len(view.PositionQuantized) > 0 {
+		m.FeatureTable.Header[PNTS_PROP_POSITION_QUANTIZED] = BinaryBodyReference{ComponentType: COMPONENT_TYPE_UNSIGNED_SHORT, ContainerType: CONTAINER_TYPE_VEC3}
+		m.FeatureTable.Data[PNTS_PROP_POSITION_QUANTIZED] = view.PositionQuantized
+	}
+	if len(view.RGBA) > 0 {
 		m.FeatureTable.Header[PNTS_PROP_RGBA] = BinaryBodyReference{ComponentType: COMPONENT_TYPE_UNSIGNED_BYTE, ContainerType: CONTAINER_TYPE_VEC4}
 		m.FeatureTable.Data[PNTS_PROP_RGBA] = view.RGBA
 	}
 
-	if view.RGB != nil {
+	if len(view.RGB) > 0 {
 		m.FeatureTable.Header[PNTS_PROP_RGB] = BinaryBodyReference{ComponentType: COMPONENT_TYPE_UNSIGNED_BYTE, ContainerType: CONTAINER_TYPE_VEC3}
 		m.FeatureTable.Data[PNTS_PROP_RGB] = view.RGB
 	}
 
-	if view.RGB565 != nil {
+	if len(view.RGB565) > 0 {
 		m.FeatureTable.Header[PNTS_PROP_RGB565] = BinaryBodyReference{ComponentType: COMPONENT_TYPE_UNSIGNED_SHORT, ContainerType: CONTAINER_TYPE_SCALAR}
 		m.FeatureTable.Data[PNTS_PROP_RGB565] = view.RGB565
 	}
 
-	if view.Normal != nil {
+	if len(view.Normal) > 0 {
 		m.FeatureTable.Header[PNTS_PROP_NORMAL] = BinaryBodyReference{ComponentType: COMPONENT_TYPE_FLOAT, ContainerType: CONTAINER_TYPE_VEC3}
 		m.FeatureTable.Data[PNTS_PROP_NORMAL] = view.Normal
 	}
 
-	if view.NormalOCT16P != nil {
+	if len(view.NormalOCT16P) > 0 {
 		m.FeatureTable.Header[PNTS_PROP_NORMAL_OCT32P] = BinaryBodyReference{ComponentType: COMPONENT_TYPE_UNSIGNED_BYTE, ContainerType: CONTAINER_TYPE_VEC2}
 		m.FeatureTable.Data[PNTS_PROP_NORMAL_OCT32P] = view.NormalOCT16P
 	}
