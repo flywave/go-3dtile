@@ -4,15 +4,15 @@ import (
 	"bytes"
 	"io"
 
-	"github.com/qmuntal/gltf"
+	"github.com/flywave/gltf"
 )
 
 func openGltf(path string) *gltf.Document {
-	doc, ok := gltf.Open(path)
-	if ok == nil {
-		return doc
+	doc, err := gltf.Open(path)
+	if err != nil {
+		return nil
 	}
-	return nil
+	return doc
 }
 
 func loadGltfFromByte(reader io.Reader) (*gltf.Document, error) {

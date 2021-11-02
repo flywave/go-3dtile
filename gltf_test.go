@@ -9,7 +9,7 @@ func TestLoadGlb(t *testing.T) {
 	// f, _ := os.Open("./data/100.glb")
 	// bt, _ := ioutil.ReadAll(f)
 	// fmt.Println(len(bt))
-	g := openGltf("./data/100.glb")
+	g := openGltf("./data/building.glb")
 	if g == nil {
 		t.Error("error")
 	}
