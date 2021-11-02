@@ -3,6 +3,7 @@ package tile3d
 import (
 	"bytes"
 	"encoding/binary"
+	"fmt"
 	"io"
 )
 
@@ -11,17 +12,22 @@ const (
 )
 
 const (
-	VCTR_PROP_POLYGONS_LENGTH         = "POLYGONS_LENGTH"
-	VCTR_PROP_POLYLINES_LENGTH        = "POLYLINES_LENGTH"
-	VCTR_PROP_POINTS_LENGTH           = "POINTS_LENGTH"
-	VCTR_PROP_REGION                  = "REGION"
-	VCTR_PROP_RTC_CENTER              = "RTC_CENTER"
-	VCTR_PROP_POLYGON_COUNTS          = "POLYGON_COUNTS"
-	VCTR_PROP_POLYGON_INDEX_COUNTS    = "POLYGON_INDEX_COUNTS"
+	VCTR_PROP_POLYGONS_LENGTH  = "POLYGONS_LENGTH"
+	VCTR_PROP_POLYLINES_LENGTH = "POLYLINES_LENGTH"
+	VCTR_PROP_POINTS_LENGTH    = "POINTS_LENGTH"
+	VCTR_PROP_REGION           = "REGION"
+	VCTR_PROP_RTC_CENTER       = "RTC_CENTER"
+
+	VCTR_PROP_POLYGON_COUNTS       = "POLYGON_COUNTS"
+	VCTR_PROP_POLYGON_COUNT        = "POLYGON_COUNT"
+	VCTR_PROP_POLYGON_INDEX_COUNTS = "POLYGON_INDEX_COUNTS"
+	VCTR_PROP_POLYGON_INDEX_COUNT  = "POLYGON_INDEX_COUNT"
+	VCTR_PROP_POLYLINE_COUNTS      = "POLYLINE_COUNTS"
+	VCTR_PROP_POLYLINE_COUNT       = "POLYLINE_COUNT"
+
 	VCTR_PROP_POLYGON_MINIMUM_HEIGHTS = "POLYGON_MINIMUM_HEIGHTS"
 	VCTR_PROP_POLYGON_MAXIMUM_HEIGHTS = "POLYGON_MAXIMUM_HEIGHTS"
 	VCTR_PROP_POLYGON_BATCH_IDS       = "POLYGON_BATCH_IDS"
-	VCTR_PROP_POLYLINE_COUNTS         = "POLYLINE_COUNTS"
 	VCTR_PROP_POLYLINE_WIDTHS         = "POLYLINE_WIDTHS"
 	VCTR_PROP_POLYLINE_BATCH_IDS      = "POLYLINE_BATCH_IDS"
 	VCTR_PROP_POINT_BATCH_IDS         = "POINT_BATCH_IDS"
@@ -147,7 +153,8 @@ func VctrFeatureTableDecode(header map[string]interface{}, buff []byte) map[stri
 	if polylinesLength > 0 {
 		ret[VCTR_PROP_POLYLINES_LENGTH] = polylinesLength
 		ret[VCTR_PROP_POLYLINE_BATCH_IDS] = getUnsignedShortBatchIDs(header, buff, VCTR_PROP_POLYLINE_BATCH_IDS, int(polylinesLength))
-		ret[VCTR_PROP_POLYLINE_COUNTS] = getUnsignedIntArrayFeatureValue(header, buff, VCTR_PROP_POLYLINE_COUNTS, 1)
+		ret[VCTR_PROP_POLYLINE_COUNTS] = getUnsignedIntArrayFeatureValue(header, buff, VCTR_PROP_POLYLINE_COUNTS, int(polylinesLength))
+		ret[VCTR_PROP_POLYLINE_COUNT] = getUnsignedIntArrayFeatureValue(header, buff, VCTR_PROP_POLYLINE_COUNT, int(polylinesLength))
 		ret[VCTR_PROP_POLYLINE_WIDTHS] = getUnsignedShortArrayFeatureValue(header, buff, VCTR_PROP_POLYLINE_WIDTHS, int(polygonsLength))
 	}
 
@@ -155,7 +162,10 @@ func VctrFeatureTableDecode(header map[string]interface{}, buff []byte) map[stri
 		ret[VCTR_PROP_POLYGONS_LENGTH] = polygonsLength
 		ret[VCTR_PROP_POLYGON_BATCH_IDS] = getUnsignedShortBatchIDs(header, buff, VCTR_PROP_POLYGON_BATCH_IDS, int(polygonsLength))
 		ret[VCTR_PROP_POLYGON_COUNTS] = getUnsignedIntArrayFeatureValue(header, buff, VCTR_PROP_POLYGON_COUNTS, int(polygonsLength))
+		ret[VCTR_PROP_POLYGON_COUNT] = getUnsignedIntArrayFeatureValue(header, buff, VCTR_PROP_POLYGON_COUNT, int(polygonsLength))
 		ret[VCTR_PROP_POLYGON_INDEX_COUNTS] = getUnsignedIntArrayFeatureValue(header, buff, VCTR_PROP_POLYGON_INDEX_COUNTS, int(polygonsLength))
+		ret[VCTR_PROP_POLYGON_INDEX_COUNT] = getUnsignedIntArrayFeatureValue(header, buff, VCTR_PROP_POLYGON_INDEX_COUNT, int(polygonsLength))
+
 		ret[VCTR_PROP_POLYGON_MAXIMUM_HEIGHTS] = getFloatArrayFeatureValue(header, buff, VCTR_PROP_POLYGON_MAXIMUM_HEIGHTS, int(polygonsLength))
 		ret[VCTR_PROP_POLYGON_MINIMUM_HEIGHTS] = getFloatArrayFeatureValue(header, buff, VCTR_PROP_POLYGON_MINIMUM_HEIGHTS, int(polygonsLength))
 	}
@@ -234,55 +244,66 @@ func VctrFeatureTableEncode(header map[string]interface{}, data map[string]inter
 	return buf.Bytes()
 }
 
-type VctrIndices [][3]uint32
-
-func (m VctrIndices) CalcSize(header Header) int64 {
-	return int64(len(m) * 3 * 4)
+type VctrIndices struct {
+	p [][3]uint32
 }
 
-func (m VctrIndices) Read(reader io.ReadSeeker, header Header) error {
+func (m *VctrIndices) Add(pt [3]uint32) {
+	m.p = append(m.p, pt)
+}
+
+func (m VctrIndices) CalcSize(header Header) uint32 {
+	ct := uint32(len(m.p) * 3 * 4)
+	header.(*VctrHeader).PolygonIndicesByteLength = ct
+	return ct
+}
+
+func (m *VctrIndices) Read(reader io.ReadSeeker, header Header) error {
 	ch := header.(*VctrHeader)
-	m = make([][3]uint32, int(ch.GetPolygonIndicesByteLength()/3/4))
-	err := binary.Read(reader, littleEndian, m)
+	m.p = make([][3]uint32, int(ch.GetPolygonIndicesByteLength()/3/4))
+	err := binary.Read(reader, littleEndian, m.p)
 	if err != nil {
 		return err
 	}
 	return nil
 }
 
-func (m VctrIndices) Write(writer io.Writer, header Header) error {
-	err := binary.Write(writer, littleEndian, m)
+func (m *VctrIndices) Write(writer io.Writer, header Header) error {
+	err := binary.Write(writer, littleEndian, m.p)
 
 	if err != nil {
 		return err
 	}
-	if header != nil {
-		ch := header.(*VctrHeader)
-		ch.SetPolygonIndicesByteLength(uint32(m.CalcSize(header)))
-	}
 	return nil
 }
 
-type VctrPolygons [][2]int
+type VctrPolygons struct {
+	p [][2]int
+}
 
-func (m VctrPolygons) encode() (us, vs []uint16) {
-	us, vs = encodePolygonPoints(m)
+func (m *VctrPolygons) Add(pt [2]int) {
+	m.p = append(m.p, pt)
+}
+
+func (m *VctrPolygons) encode() (us, vs []uint16) {
+	us, vs = encodePolygonPoints(m.p)
 	return
 }
 
-func (m VctrPolygons) decode(us, vs []uint16) {
-	decodePolygonPoints(us, vs, m)
-	return
+func (m *VctrPolygons) decode(us, vs []uint16) {
+	m.p = decodePolygonPoints(us, vs)
 }
 
-func (m VctrPolygons) CalcSize(header Header) int64 {
-	return int64(len(m) * 2 * 2)
+func (m *VctrPolygons) CalcSize(header Header) uint32 {
+	ct := uint32(len(m.p) * 2 * 2)
+	header.(*VctrHeader).PolygonPositionsByteLength = ct
+	return ct
 }
 
-func (m VctrPolygons) Read(reader io.ReadSeeker, header Header) error {
+func (m *VctrPolygons) Read(reader io.ReadSeeker, header Header) error {
 	ch := header.(*VctrHeader)
-	us := make([]uint16, int(ch.GetPolygonPositionsByteLength()/2/4))
-	vs := make([]uint16, int(ch.GetPolygonPositionsByteLength()/2/4))
+	us := make([]uint16, int(ch.GetPolygonPositionsByteLength()/2/2))
+	vs := make([]uint16, int(ch.GetPolygonPositionsByteLength()/2/2))
 
 	err := binary.Read(reader, littleEndian, us)
 	if err != nil {
@@ -296,7 +317,7 @@ func (m VctrPolygons) Read(reader io.ReadSeeker, header Header) error {
 	return nil
 }
 
-func (m VctrPolygons) Write(writer io.Writer, header Header) error {
+func (m *VctrPolygons) Write(writer io.Writer, header Header) error {
 	us, vs := m.encode()
 	err := binary.Write(writer, littleEndian, us)
 
@@ -308,30 +329,33 @@ func (m VctrPolygons) Write(writer io.Writer, header Header) error {
 	if err != nil {
 		return err
 	}
-	if header != nil {
-		ch := header.(*VctrHeader)
-		ch.SetPolygonPositionsByteLength(uint32(m.CalcSize(header)))
-	}
 	return nil
 }
 
-type VctrPolylines [][3]int
+type VctrPolylines struct {
+	p [][3]int
+}
 
-func (m VctrPolylines) encode() (us, vs, hs []uint16) {
-	us, vs, hs = encodePoints(m)
+func (m *VctrPolylines) Add(pt [3]int) {
+	m.p = append(m.p, pt)
+}
+
+func (m *VctrPolylines) encode() (us, vs, hs []uint16) {
+	us, vs, hs = encodePoints(m.p)
 	return
 }
 
-func (m VctrPolylines) decode(us, vs, hs []uint16) {
-	decodePoints(us, vs, hs, m)
-	return
+func (m *VctrPolylines) decode(us, vs, hs []uint16) {
+	m.p = decodePoints(us, vs, hs)
 }
 
-func (m VctrPolylines) CalcSize(header Header) int64 {
-	return int64(len(m) * 3 * 2)
+func (m *VctrPolylines) CalcSize(header Header) uint32 {
+	ct := uint32(len(m.p) * 3 * 2)
+	header.(*VctrHeader).PolylinePositionsByteLength = ct
+	return ct
 }
 
-func (m VctrPolylines) Read(reader io.ReadSeeker, header Header) error {
+func (m *VctrPolylines) Read(reader io.ReadSeeker, header Header) error {
 	ch := header.(*VctrHeader)
 	us := make([]uint16, int(ch.GetPolylinePositionsByteLength()/2/4))
 	vs := make([]uint16, int(ch.GetPolylinePositionsByteLength()/2/4))
@@ -345,15 +369,12 @@ func (m VctrPolylines) Read(reader io.ReadSeeker, header Header) error {
 	if err != nil {
 		return err
 	}
-	err = binary.Read(reader, littleEndian, hs)
-	if err != nil {
-		return err
-	}
+
 	m.decode(us, vs, hs)
 	return nil
 }
 
-func (m VctrPolylines) Write(writer io.Writer, header Header) error {
+func (m *VctrPolylines) Write(writer io.Writer, header Header) error {
 	us, vs, hs := m.encode()
 	err := binary.Write(writer, littleEndian, us)
 
@@ -370,37 +391,42 @@ func (m VctrPolylines) Write(writer io.Writer, header Header) error {
 	if err != nil {
 		return err
 	}
-	if header != nil {
-		ch := header.(*VctrHeader)
-		ch.SetPolylinePositionsByteLength(uint32(m.CalcSize(header)))
-	}
 	return nil
 }
 
-type VctrPoints [][3]int
+type VctrPoints struct {
+	p [][3]int
+}
 
-func (m VctrPoints) encode() (us, vs, hs []uint16) {
-	us, vs, hs = encodePoints(m)
+func (m *VctrPoints) Add(pt [3]int) {
+	m.p = append(m.p, pt)
+}
+
+func (m *VctrPoints) encode() (us, vs, hs []uint16) {
+	us, vs, hs = encodePoints(m.p)
 	return
 }
 
-func (m VctrPoints) decode(us, vs, hs []uint16) {
-	decodePoints(us, vs, hs, m)
-	return
+func (m *VctrPoints) decode(us, vs, hs []uint16) {
+	m.p = decodePoints(us, vs, hs)
 }
 
-func (m VctrPoints) CalcSize(header Header) int64 {
-	return int64(len(m) * 3 * 2)
+func (m *VctrPoints) CalcSize(header Header) uint32 {
+	ct := uint32(len(m.p) * 3 * 2)
+	header.(*VctrHeader).PolylinePositionsByteLength = ct
+	return ct
+
 }
 
-func (m VctrPoints) Read(reader io.ReadSeeker, header Header) error {
+func (m *VctrPoints) Read(reader io.ReadSeeker, header Header) error {
 	ch := header.(*VctrHeader)
-	us := make([]uint16, int(ch.GetPolylinePositionsByteLength()/2/4))
-	vs := make([]uint16, int(ch.GetPolylinePositionsByteLength()/2/4))
-	hs := make([]uint16, int(ch.GetPolylinePositionsByteLength()/2/4))
+	us := make([]uint16, int(ch.PointPositionsByteLength/2/3))
+	vs := make([]uint16, int(ch.PointPositionsByteLength/2/3))
+	hs := make([]uint16, int(ch.PointPositionsByteLength/2/3))
 
 	err := binary.Read(reader, littleEndian, us)
 	if err != nil {
+		fmt.Println(err.Error())
 		return err
 	}
 	err = binary.Read(reader, littleEndian, vs)
@@ -415,7 +441,7 @@ func (m VctrPoints) Read(reader io.ReadSeeker, header Header) error {
 	return nil
 }
 
-func (m VctrPoints) Write(writer io.Writer, header Header) error {
+func (m *VctrPoints) Write(writer io.Writer, header Header) error {
 	us, vs, hs := m.encode()
 	err := binary.Write(writer, littleEndian, us)
 
@@ -431,10 +457,6 @@ func (m VctrPoints) Write(writer io.Writer, header Header) error {
 
 	if err != nil {
 		return err
-	}
-	if header != nil {
-		ch := header.(*VctrHeader)
-		ch.SetPolylinePositionsByteLength(uint32(m.CalcSize(header)))
 	}
 	return nil
 }
@@ -603,22 +625,22 @@ func (m *Vctr) GetPoints() VctrPoints {
 	return m.Points
 }
 
-func (m *Vctr) CalcSize() int64 {
-	si := m.Header.CalcSize() + m.FeatureTable.CalcSize(m.GetHeader()) + m.BatchTable.CalcSize(m.GetHeader())
+func (m *Vctr) CalcSize() uint32 {
+	si := uint32(m.Header.CalcSize() + m.FeatureTable.CalcSize(m.GetHeader()) + m.BatchTable.CalcSize(m.GetHeader()))
 
-	if m.Indices != nil {
+	if m.Indices.p != nil {
 		si += m.Indices.CalcSize(m.GetHeader())
 	}
 
-	if m.Polygons != nil {
+	if m.Polygons.p != nil {
 		si += m.Polygons.CalcSize(m.GetHeader())
 	}
 
-	if m.Polylines != nil {
+	if m.Polylines.p != nil {
 		si += m.Polylines.CalcSize(m.GetHeader())
 	}
 
-	if m.Points != nil {
+	if m.Points.p != nil {
 		si += m.Points.CalcSize(m.GetHeader())
 	}
 	return si
@@ -630,7 +652,7 @@ func (m *Vctr) Read(reader io.ReadSeeker) error {
 		return err
 	}
 
-	m.FeatureTable.decode = PntsFeatureTableDecode
+	m.FeatureTable.decode = VctrFeatureTableDecode
 
 	if err := m.FeatureTable.Read(reader, m.GetHeader()); err != nil {
 		return err
@@ -662,7 +684,7 @@ func (m *Vctr) Read(reader io.ReadSeeker) error {
 func (m *Vctr) Write(writer io.Writer) error {
 	m.FeatureTable.encode = VctrFeatureTableEncode
 	_ = VctrFeatureTableEncode(m.FeatureTable.Header, m.FeatureTable.Data)
-	si := m.Header.CalcSize() + m.FeatureTable.CalcSize(m.GetHeader()) + m.BatchTable.CalcSize(m.GetHeader())
+	si := m.CalcSize()
 
 	m.Header.ByteLength = uint32(si)
 
@@ -680,25 +702,25 @@ func (m *Vctr) Write(writer io.Writer) error {
 		return err
 	}
 
-	if m.Indices != nil {
+	if m.Indices.p != nil {
 		if err := m.Indices.Write(writer, nil); err != nil {
 			return err
 		}
 	}
 
-	if m.Polygons != nil {
+	if m.Polygons.p != nil {
 		if err := m.Polygons.Write(writer, nil); err != nil {
 			return err
 		}
 	}
 
-	if m.Polylines != nil {
+	if m.Polylines.p != nil {
 		if err := m.Polylines.Write(writer, nil); err != nil {
 			return err
 		}
 	}
 
-	if m.Points != nil {
+	if m.Points.p != nil {
 		if err := m.Points.Write(writer, nil); err != nil {
 			return err
 		}

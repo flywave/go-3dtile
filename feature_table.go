@@ -64,8 +64,8 @@ func (h *FeatureTable) CalcSize(header Header) int64 {
 }
 
 func (h *FeatureTable) GetBatchLength() int {
-	if h.Header["BATCH_LENGTH"] != nil {
-		switch d := h.Header["BATCH_LENGTH"].(type) {
+	if h.Data["BATCH_LENGTH"] != nil {
+		switch d := h.Data["BATCH_LENGTH"].(type) {
 		case int:
 			return d
 		case float64:
@@ -113,17 +113,26 @@ func (h *FeatureTable) Read(reader io.ReadSeeker, header Header) error {
 }
 
 func (h *FeatureTable) Write(writer io.Writer, header Header) error {
-	JSONLenght, err := h.writeJSONHeader(writer)
+	JSONLength, err := h.writeJSONHeader(writer)
 	if err != nil {
 		return err
 	}
-	BinaryLenght, err := h.writeData(writer)
+
+	if JSONLength > 0 {
+		padding := createPaddingBytes(make([]byte, 0, 7), 28+uint32(JSONLength), 8, 0x20)
+		if _, err := writer.Write(padding); err != nil {
+			return err
+		}
+		JSONLength += len(padding)
+	}
+
+	BinaryLength, err := h.writeData(writer)
 	if err != nil {
 		return err
 	}
 	if header != nil {
-		header.SetFeatureTableJSONByteLength(uint32(JSONLenght))
-		header.SetFeatureTableBinaryByteLength(uint32(BinaryLenght))
+		header.SetFeatureTableJSONByteLength(uint32(JSONLength))
+		header.SetFeatureTableBinaryByteLength(uint32(BinaryLength))
 	}
 	return nil
 }

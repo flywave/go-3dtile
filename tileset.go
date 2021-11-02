@@ -104,7 +104,7 @@ type Tile struct {
 	ViewerRequestVolume *BoundingVolume `json:"viewerRequestVolume,omitempty"`
 	GeometricError      float64         `json:"geometricError"`
 	Refine              string          `json:"refine"`
-	Transform           [16]float64     `json:"transform"`
+	Transform           *[16]float64    `json:"transform,omitempty"`
 	Children            []Tile          `json:"children,omitempty"`
 }
 
