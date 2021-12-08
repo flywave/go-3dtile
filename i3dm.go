@@ -5,7 +5,7 @@ import (
 	"encoding/binary"
 	"io"
 
-	"github.com/flywave/gltf"
+	"github.com/qmuntal/gltf"
 )
 
 const (

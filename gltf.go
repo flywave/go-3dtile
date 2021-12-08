@@ -4,7 +4,7 @@ import (
 	"bytes"
 	"io"
 
-	"github.com/flywave/gltf"
+	"github.com/qmuntal/gltf"
 )
 
 func openGltf(path string) *gltf.Document {

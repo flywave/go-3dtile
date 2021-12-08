@@ -1,4 +1,4 @@
-github.com/flywave/gltf v0.20.4-0.20211102143515-ab21d3e4e95d h1:zXJDX6Pb/RBUtrCGSnJGCcON/gfJlcDfIOa0+/BpFDY=
-github.com/flywave/gltf v0.20.4-0.20211102143515-ab21d3e4e95d/go.mod h1:WJQOty0+tEOB05KKpqAT8BhqYYbTknXEFsGL/Yb9Fwo=
 github.com/go-test/deep v1.0.1 h1:UQhStjbkDClarlmv0am7OXXO4/GaPdCGiUiMTvi28sg=
 github.com/go-test/deep v1.0.1/go.mod h1:wGDj63lr65AM2AQyKZd/NYHGb0R+1RLqB8NKt3aSFNA=
+github.com/qmuntal/gltf v0.20.3 h1:9oW6IAgHROZjwBcEVgkBhH1SR/7TLlVfSn6VDr/2h3E=
+github.com/qmuntal/gltf v0.20.3/go.mod h1:ENqYfECmeaqs2BWXWe6OKtMC8ucZII6s9OHr6F5oZ94=
