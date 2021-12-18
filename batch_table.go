@@ -106,16 +106,17 @@ func (h *BatchTable) Read(reader io.ReadSeeker, header Header, batchLength int) 
 	if header.GetBatchTableJSONByteLength() <= 0 {
 		return nil
 	}
-	jsonb := make([]byte, header.GetBatchTableJSONByteLength())
+	jsonLen := header.GetBatchTableJSONByteLength()
 
-	if _, err := reader.Read(jsonb); err != nil {
-		return err
-	}
-
-	if batchLength == 0 {
+	if jsonLen == 0 {
 		h.Data = make(map[string]interface{})
 		h.Header = make(map[string]interface{})
 		return nil
+	}
+
+	jsonb := make([]byte, jsonLen)
+	if _, err := reader.Read(jsonb); err != nil {
+		return err
 	}
 
 	jsonr := bytes.NewReader(jsonb)
