@@ -162,7 +162,11 @@ func I3dmFeatureTableEncode(header map[string]interface{}, data map[string]inter
 		dt := t.([][3]uint16)
 		binary.Write(buf, littleEndian, t.([][3]uint16))
 		header[I3DM_PROP_POSITION_QUANTIZED] = BinaryBodyReference{ByteOffset: uint32(offset), ComponentType: COMPONENT_TYPE_UNSIGNED_SHORT, ContainerType: CONTAINER_TYPE_VEC3}
-		offset += (len(dt) * 3 * 2)
+		l := (len(dt) * 3 * 2)
+		offset += l
+		pad := createPaddingBytes([]byte{}, uint32(offset), 4, 0x20)
+		binary.Write(buf, littleEndian, pad)
+		offset += len(pad)
 	}
 
 	if t := data[I3DM_PROP_NORMAL_UP]; t != nil {
@@ -183,14 +187,20 @@ func I3dmFeatureTableEncode(header map[string]interface{}, data map[string]inter
 		dt := t.([][2]uint16)
 		binary.Write(buf, littleEndian, dt)
 		header[I3DM_PROP_NORMAL_UP_OCT32P] = BinaryBodyReference{ByteOffset: uint32(offset), ComponentType: COMPONENT_TYPE_UNSIGNED_SHORT, ContainerType: CONTAINER_TYPE_VEC2}
-		offset += (len(dt) * 2 * 2)
+		offset += (len(dt) * 3 * 2)
+		pad := createPaddingBytes([]byte{}, uint32(offset), 4, 0x20)
+		binary.Write(buf, littleEndian, pad)
+		offset += len(pad)
 	}
 
 	if t := data[I3DM_PROP_NORMAL_RIGHT_OCT32P]; t != nil {
 		dt := t.([][2]uint16)
 		binary.Write(buf, littleEndian, dt)
 		header[I3DM_PROP_NORMAL_RIGHT_OCT32P] = BinaryBodyReference{ByteOffset: uint32(offset), ComponentType: COMPONENT_TYPE_UNSIGNED_SHORT, ContainerType: CONTAINER_TYPE_VEC2}
-		offset += (len(dt) * 2 * 2)
+		offset += (len(dt) * 3 * 2)
+		pad := createPaddingBytes([]byte{}, uint32(offset), 4, 0x20)
+		binary.Write(buf, littleEndian, pad)
+		offset += len(pad)
 	}
 
 	if t := data[I3DM_PROP_SCALE]; t != nil {
@@ -222,6 +232,10 @@ func I3dmFeatureTableEncode(header map[string]interface{}, data map[string]inter
 			header[PNTS_PROP_BATCH_ID] = BinaryBodyReference{ByteOffset: uint32(offset), ComponentType: COMPONENT_TYPE_UNSIGNED_INT}
 			offset += (len(dt) * 4)
 		}
+		pad := createPaddingBytes([]byte{}, uint32(offset), 4, 0x20)
+		binary.Write(buf, littleEndian, pad)
+		offset += len(pad)
+
 	}
 	out = buf.Bytes()
 	if len(out) != offset {
@@ -464,7 +478,7 @@ func (m *I3dm) Write(writer io.Writer) error {
 	_ = I3dmFeatureTableEncode(m.FeatureTable.Header, m.FeatureTable.Data)
 
 	if m.Header.GltfFormat == 0 {
-		buf = createPaddingBytes([]byte(m.GltfUri), uint32(len(m.GltfUri)), 8, 0x20)
+		buf = createPaddingBytes([]byte(m.GltfUri), uint32(len(m.GltfUri)), 4, 0x20)
 	} else if m.Header.GltfFormat == 1 {
 		var err1 error
 		if buf, err1 = getGltfBinary(m.Model, 8); err1 != nil {

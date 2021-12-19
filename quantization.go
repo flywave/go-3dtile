@@ -21,18 +21,18 @@ func isInRange(qpos uint16, rangeScale uint16) bool {
 }
 
 func Quantize(pos float32, origin float32, scale float32, rangeScale uint16) uint16 {
-	return uint16(math.Floor(math.Max(0.0, math.Min(float64(rangeScale), float64(0.5+(pos-origin)*scale)))))
+	return uint16(math.Floor(math.Max(0.0, math.Min(float64(rangeScale), float64(pos)*float64(scale)))))
 }
 
 func IsQuantizable(pos float32, origin float32, scale float32, rangeScale uint16) bool {
 	return isInRange(Quantize(pos, origin, scale, rangeScale), rangeScale16)
 }
 
-func UnQuantize(qpos uint16, origin float32, scale float32) float32 {
+func UnQuantize(qpos uint16, origin float32, scale float32) float64 {
 	if 0.0 == scale {
-		return origin
+		return float64(origin)
 	}
-	return origin + float32(qpos)/scale
+	return float64(origin) + float64(qpos)/float64(scale)
 }
 
 func IsQuantized(qpos uint16) bool {
@@ -88,8 +88,8 @@ func QuantizePoint3d(pos [3]float32, params *QParams3d) [3]uint16 {
 	return out
 }
 
-func UnQuantizePoint3d(qpos [3]uint16, params *QParams3d) [3]float32 {
-	var out [3]float32
+func UnQuantizePoint3d(qpos [3]uint16, params *QParams3d) [3]float64 {
+	var out [3]float64
 	out[0] = UnQuantize(qpos[0], params.Origin[0], params.Scale[0])
 	out[1] = UnQuantize(qpos[1], params.Origin[1], params.Scale[1])
 	out[2] = UnQuantize(qpos[2], params.Origin[2], params.Scale[2])
