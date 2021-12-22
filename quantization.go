@@ -10,29 +10,26 @@ const rangeScale16 = 0xffff
 const rangeScale8 = 0xff
 
 func computeScale(extent float32, rangeScale uint16) float32 {
-	if 0.0 == extent {
-		return extent
+	if extent == 0 {
+		return 1
 	}
-	return float32(rangeScale) / extent
+	return extent
 }
 
 func isInRange(qpos uint16, rangeScale uint16) bool {
 	return qpos >= 0 && qpos < rangeScale+1
 }
 
-func Quantize(pos float32, origin float32, scale float32, rangeScale uint16) uint16 {
-	return uint16(math.Floor(math.Max(0.0, math.Min(float64(rangeScale), float64(pos)*float64(scale)))))
+func Quantize(pos float64, origin float32, scale float32, rangeScale uint16) uint16 {
+	return uint16(math.Floor(math.Max(0.0, math.Min(float64(rangeScale), (pos-float64(origin))*float64(float32(rangeScale)/scale)))))
 }
 
-func IsQuantizable(pos float32, origin float32, scale float32, rangeScale uint16) bool {
+func IsQuantizable(pos float64, origin float32, scale float32, rangeScale uint16) bool {
 	return isInRange(Quantize(pos, origin, scale, rangeScale), rangeScale16)
 }
 
-func UnQuantize(qpos uint16, origin float32, scale float32) float64 {
-	if 0.0 == scale {
-		return float64(origin)
-	}
-	return float64(origin) + float64(qpos)/float64(scale)
+func UnQuantize(qpos uint16, origin float32, scale float32, rangeScale uint16) float64 {
+	return float64(origin) + float64(qpos)/float64(scale*float32(rangeScale))
 }
 
 func IsQuantized(qpos uint16) bool {
@@ -80,7 +77,7 @@ func (p *QParams3d) rangeDiagonal() [3]float32 {
 	return [3]float32{x, y, z}
 }
 
-func QuantizePoint3d(pos [3]float32, params *QParams3d) [3]uint16 {
+func QuantizePoint3d(pos [3]float64, params *QParams3d) [3]uint16 {
 	var out [3]uint16
 	out[0] = Quantize(pos[0], params.Origin[0], params.Scale[0], rangeScale16)
 	out[1] = Quantize(pos[1], params.Origin[1], params.Scale[1], rangeScale16)
@@ -90,8 +87,8 @@ func QuantizePoint3d(pos [3]float32, params *QParams3d) [3]uint16 {
 
 func UnQuantizePoint3d(qpos [3]uint16, params *QParams3d) [3]float64 {
 	var out [3]float64
-	out[0] = UnQuantize(qpos[0], params.Origin[0], params.Scale[0])
-	out[1] = UnQuantize(qpos[1], params.Origin[1], params.Scale[1])
-	out[2] = UnQuantize(qpos[2], params.Origin[2], params.Scale[2])
+	out[0] = UnQuantize(qpos[0], params.Origin[0], params.Scale[0], rangeScale16)
+	out[1] = UnQuantize(qpos[1], params.Origin[1], params.Scale[1], rangeScale16)
+	out[2] = UnQuantize(qpos[2], params.Origin[2], params.Scale[2], rangeScale16)
 	return out
 }
