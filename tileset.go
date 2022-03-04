@@ -22,8 +22,7 @@ type Asset struct {
 }
 
 type Content struct {
-	Url            string          `json:"uri"`
-	BoundingVolume *BoundingVolume `json:"boundingVolume,omitempty"`
+	Url string `json:"uri"`
 }
 
 type Schema struct {
@@ -39,7 +38,7 @@ type BoundingVolume struct {
 
 func (b *BoundingVolume) SetBox(box []float64) error {
 	if len(box) != 12 {
-		return errors.New("box must 12 element!")
+		return errors.New("box must 12 element")
 	}
 	if b.Region != nil || b.Sphere != nil {
 		b.Region = nil
@@ -51,7 +50,7 @@ func (b *BoundingVolume) SetBox(box []float64) error {
 
 func (b *BoundingVolume) SetRegion(region []float64) error {
 	if len(region) != 6 {
-		return errors.New("region must 6 element!")
+		return errors.New("region must 6 element")
 	}
 	if b.Box != nil || b.Sphere != nil {
 		b.Box = nil
@@ -63,7 +62,7 @@ func (b *BoundingVolume) SetRegion(region []float64) error {
 
 func (b *BoundingVolume) SetSphere(sphere []float64) error {
 	if len(sphere) != 4 {
-		return errors.New("sphere must 4 element!")
+		return errors.New("sphere must 4 element")
 	}
 	if b.Box != nil || b.Region != nil {
 		b.Box = nil
@@ -98,14 +97,19 @@ func (b *BoundingVolume) GetData() []float64 {
 	return nil
 }
 
+const MULTIPLE_CONTENTS = "3DTILES_multiple_contents"
+
+type MultipeContent []*Content
+
 type Tile struct {
-	Content             *Content        `json:"content,omitempty"`
-	BoundingVolume      BoundingVolume  `json:"boundingVolume,omitempty"`
-	ViewerRequestVolume *BoundingVolume `json:"viewerRequestVolume,omitempty"`
-	GeometricError      float64         `json:"geometricError"`
-	Refine              string          `json:"refine"`
-	Transform           *[16]float64    `json:"transform,omitempty"`
-	Children            []Tile          `json:"children,omitempty"`
+	Content             *Content               `json:"content,omitempty"`
+	BoundingVolume      BoundingVolume         `json:"boundingVolume,omitempty"`
+	ViewerRequestVolume *BoundingVolume        `json:"viewerRequestVolume,omitempty"`
+	GeometricError      float64                `json:"geometricError"`
+	Refine              string                 `json:"refine"`
+	Transform           *[16]float64           `json:"transform,omitempty"`
+	Children            []Tile                 `json:"children,omitempty"`
+	Extensions          map[string]interface{} `json:"extensions,omitempty"`
 }
 
 type Tileset struct {
@@ -113,8 +117,8 @@ type Tileset struct {
 	GeometricError     float64            `json:"geometricError"`
 	Root               Tile               `json:"root"`
 	Properties         *map[string]Schema `json:"properties,omitempty"`
-	ExtensionsUsed     *[]string          `json:"extensionsUsed,omitempty"`
-	ExtensionsRequired *[]string          `json:"extensionsRequired,omitempty"`
+	ExtensionsUsed     []string           `json:"extensionsUsed,omitempty"`
+	ExtensionsRequired []string           `json:"extensionsRequired,omitempty"`
 }
 
 func (ts *Tileset) ToJson() (string, error) {
