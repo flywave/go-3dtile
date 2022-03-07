@@ -6,6 +6,19 @@ import (
 	"io"
 )
 
+const (
+	BATCH_TABLE_HIERARCHY     = "3DTILES_batch_table_hierarchy"
+	HIERARCHY_INSTANCE_LENGTH = "instancesLength"
+
+	HIERARCHY_CLASSES      = "classes"
+	HIERARCHY_CLASSIDS     = "classIds"
+	HIERARCHY_CLASSINDEXES = "classIndexes"
+
+	HIERARCHY_PARENT_COUNTS = "parentCounts"
+	HIERARCHY_PARENTIDS     = "parentIds"
+	HIERARCHY_PARENTINDEXES = "parentIndexes"
+)
+
 type BatchTable struct {
 	Header map[string]interface{}
 	Data   map[string]interface{}
