@@ -436,6 +436,7 @@ func (m *I3dm) CalcSize() int64 {
 	} else {
 		panic("GltfFormat must 0 or 1")
 	}
+	m.FeatureTable.encode = I3dmFeatureTableEncode
 	return m.Header.CalcSize() + m.FeatureTable.CalcSize(m.GetHeader()) + m.BatchTable.CalcSize(m.GetHeader()) + int64(gltfSize)
 }
 

@@ -130,6 +130,7 @@ func (m *B3dm) GetBatchTable() *BatchTable {
 }
 
 func (m *B3dm) CalcSize() int64 {
+	m.FeatureTable.encode = B3dmFeatureTableEncode
 	return m.Header.CalcSize() + m.FeatureTable.CalcSize(m.GetHeader()) + m.BatchTable.CalcSize(m.GetHeader()) + calcGltfSize(m.Model, 8)
 }
 

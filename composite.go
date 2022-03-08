@@ -9,6 +9,16 @@ const (
 	CMPT_MAGIC = "cmpt"
 )
 
+func NewCmpt() *Cmpt {
+	m := &Cmpt{}
+	mg := []byte(CMPT_MAGIC)
+	m.Header.Magic[0] = mg[0]
+	m.Header.Magic[1] = mg[1]
+	m.Header.Magic[2] = mg[2]
+	m.Header.Magic[3] = mg[3]
+	return m
+}
+
 type CmptHeader struct {
 	Magic       [4]byte
 	Version     uint32
@@ -100,6 +110,9 @@ func (m *Cmpt) Read(reader io.ReadSeeker) error {
 
 func (m *Cmpt) Write(writer io.Writer) error {
 	m.Header.TilesLength = uint32(len(m.Tiles))
+	for i := range m.Tiles {
+		m.Header.ByteLength += uint32(m.Tiles[i].CalcSize())
+	}
 
 	err := binary.Write(writer, littleEndian, m.Header)
 

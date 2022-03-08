@@ -446,6 +446,7 @@ func (m *Pnts) GetBatchTable() *BatchTable {
 }
 
 func (m *Pnts) CalcSize() int64 {
+	m.FeatureTable.encode = PntsFeatureTableEncode
 	return m.Header.CalcSize() + m.FeatureTable.CalcSize(m.GetHeader()) + m.BatchTable.CalcSize(m.GetHeader())
 }
 
