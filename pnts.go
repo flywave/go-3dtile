@@ -285,8 +285,11 @@ func (m *Pnts) SetFeatureTable(view PntsFeatureTableView) {
 	if m.FeatureTable.Data == nil {
 		m.FeatureTable.Data = make(map[string]interface{})
 	}
-	m.FeatureTable.Header[PNTS_PROP_POSITION] = BinaryBodyReference{ComponentType: COMPONENT_TYPE_FLOAT, ContainerType: CONTAINER_TYPE_VEC3}
-	m.FeatureTable.Data[PNTS_PROP_POSITION] = view.Position
+
+	if len(view.Position) > 0 {
+		m.FeatureTable.Header[PNTS_PROP_POSITION] = BinaryBodyReference{ComponentType: COMPONENT_TYPE_FLOAT, ContainerType: CONTAINER_TYPE_VEC3}
+		m.FeatureTable.Data[PNTS_PROP_POSITION] = view.Position
+	}
 
 	if len(view.PositionQuantized) > 0 {
 		m.FeatureTable.Header[PNTS_PROP_POSITION_QUANTIZED] = BinaryBodyReference{ComponentType: COMPONENT_TYPE_UNSIGNED_SHORT, ContainerType: CONTAINER_TYPE_VEC3}
