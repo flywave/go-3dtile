@@ -163,6 +163,29 @@ func getFloatVec3ArrayFeatureValue(header map[string]interface{}, buff []byte, p
 	return nil
 }
 
+func getUnsignedShortVec3ArrayFeatureValue(header map[string]interface{}, buff []byte, propName string, length int) [][3]uint16 {
+	objValue := header[propName]
+	switch oref := objValue.(type) {
+	case BinaryBodyReference:
+		buf := bytes.NewBuffer(buff[oref.ByteOffset:])
+		ret := make([][3]uint16, length)
+		err := binary.Read(buf, littleEndian, ret)
+		if err != nil {
+			return nil
+		}
+		return ret
+	case []float64:
+		ret := make([][3]uint16, length)
+		for i := 0; i < length; i++ {
+			ret[i][0] = uint16(oref[i*3])
+			ret[i][1] = uint16(oref[i*3+1])
+			ret[i][2] = uint16(oref[i*3+2])
+		}
+		return ret
+	}
+	return nil
+}
+
 func getUnsignedIntegerScalarFeatureValue(header map[string]interface{}, buff []byte, propName string) uint32 {
 	objValue := header[propName]
 	switch oref := objValue.(type) {

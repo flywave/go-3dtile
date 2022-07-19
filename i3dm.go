@@ -111,7 +111,7 @@ func I3dmFeatureTableDecode(header map[string]interface{}, buff []byte) map[stri
 	if floatArrayValue != nil {
 		ret[I3DM_PROP_POSITION] = floatArrayValue
 	}
-	unsignedShortArrayValue := getUnsignedShortArrayFeatureValue(header, buff, I3DM_PROP_POSITION_QUANTIZED, int(instanceLength)*3)
+	unsignedShortArrayValue := getUnsignedShortVec3ArrayFeatureValue(header, buff, I3DM_PROP_POSITION_QUANTIZED, int(instanceLength))
 	if unsignedShortArrayValue != nil {
 		ret[I3DM_PROP_POSITION_QUANTIZED] = unsignedShortArrayValue
 	}
@@ -123,11 +123,11 @@ func I3dmFeatureTableDecode(header map[string]interface{}, buff []byte) map[stri
 	if floatArrayValue != nil {
 		ret[I3DM_PROP_NORMAL_RIGHT] = floatArrayValue
 	}
-	unsignedShortArrayValue = getUnsignedShortArrayFeatureValue(header, buff, I3DM_PROP_NORMAL_UP_OCT32P, int(instanceLength)*2)
+	unsignedShortArrayValue = getUnsignedShortVec3ArrayFeatureValue(header, buff, I3DM_PROP_NORMAL_UP_OCT32P, int(instanceLength))
 	if unsignedShortArrayValue != nil {
 		ret[I3DM_PROP_NORMAL_UP_OCT32P] = unsignedShortArrayValue
 	}
-	unsignedShortArrayValue = getUnsignedShortArrayFeatureValue(header, buff, I3DM_PROP_NORMAL_RIGHT_OCT32P, int(instanceLength)*2)
+	unsignedShortArrayValue = getUnsignedShortVec3ArrayFeatureValue(header, buff, I3DM_PROP_NORMAL_RIGHT_OCT32P, int(instanceLength))
 	if unsignedShortArrayValue != nil {
 		ret[I3DM_PROP_NORMAL_RIGHT_OCT32P] = unsignedShortArrayValue
 	}

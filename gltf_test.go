@@ -12,7 +12,7 @@ func TestLoadGlb(t *testing.T) {
 	// f, _ := os.Open("./data/100.glb")
 	// bt, _ := ioutil.ReadAll(f)
 	// fmt.Println(len(bt))
-	g := openGltf("./data/building.glb")
+	g := openGltf("./data/0.glb")
 	if g == nil {
 		t.Error("error")
 	}
@@ -30,13 +30,12 @@ func TestReadB3dm(t *testing.T) {
 }
 
 func TestReadi3dm(t *testing.T) {
-	f, _ := os.Open("/home/hj/workspace/GISCore/build/public/Upload/Tilesets/yanshi/11-12/14/13533/6366/0-2.i3dm")
+	f, _ := os.Open("data/6-290.b3dm")
 	// bt := make([]byte, 267)
 	// f.Read(bt)
 	// fmt.Println(string(bt))
-	b3d := &I3dm{}
+	b3d := &B3dm{}
 	b3d.Read(f)
 	bts, _ := mst.GetGltfBinary(b3d.Model, 8)
-	ioutil.WriteFile("./data/0.glb", bts, 0755)
-
+	ioutil.WriteFile("./data/0-0.glb", bts, 0755)
 }
