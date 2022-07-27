@@ -94,7 +94,7 @@ type PntsFeatureTableView struct {
 	NormalOCT16P          [][2]uint8
 	BatchId               interface{}
 	PointsLength          uint32
-	RtcCenter             []float32
+	RtcCenter             []float64
 	QuantizedVolumeOffset []float32
 	QuantizedVolumeScale  []float32
 	ConstantRGBA          []uint8
@@ -131,12 +131,18 @@ func PntsFeatureTableDecode(header map[string]interface{}, buff []byte) map[stri
 	unsignedShortArrayValue := getUnsignedShortArrayFeatureValue(header, buff, PNTS_PROP_POSITION_QUANTIZED, int(pointsLength*3))
 	if unsignedShortArrayValue != nil {
 		ret[PNTS_PROP_POSITION_QUANTIZED] = unsignedShortArrayValue
+		ret[PNTS_PROP_QUANTIZED_VOLUME_OFFSET] = getFloatVec3FeatureValue(header, buff, I3DM_PROP_QUANTIZED_VOLUME_OFFSET)
+		ret[PNTS_PROP_QUANTIZED_VOLUME_SCALE] = getFloatVec3FeatureValue(header, buff, I3DM_PROP_QUANTIZED_VOLUME_SCALE)
 	}
 	if _, ok := header[PNTS_PROP_QUANTIZED_VOLUME_OFFSET]; ok {
 		ret[PNTS_PROP_QUANTIZED_VOLUME_OFFSET] = getFloatVec3FeatureValue(header, buff, PNTS_PROP_QUANTIZED_VOLUME_OFFSET)
 	}
 	if _, ok := header[PNTS_PROP_QUANTIZED_VOLUME_SCALE]; ok {
 		ret[PNTS_PROP_QUANTIZED_VOLUME_SCALE] = getFloatVec3FeatureValue(header, buff, PNTS_PROP_QUANTIZED_VOLUME_SCALE)
+	}
+
+	if _, ok := header[PNTS_PROP_RTC_CENTER]; ok {
+		ret[PNTS_PROP_RTC_CENTER] = getFloat64Vec3FeatureValue(header, buff, PNTS_PROP_QUANTIZED_VOLUME_SCALE)
 	}
 
 	reference := getBinaryBodyReference(header, PNTS_PROP_RGBA)
@@ -414,7 +420,7 @@ func (m *Pnts) GetFeatureTableView() PntsFeatureTableView {
 	ret.PointsLength = m.FeatureTable.Header[PNTS_PROP_POINTS_LENGTH].(uint32)
 
 	if m.FeatureTable.Header[PNTS_PROP_RTC_CENTER] != nil {
-		ret.RtcCenter = m.FeatureTable.Header[PNTS_PROP_RTC_CENTER].([]float32)
+		ret.RtcCenter = m.FeatureTable.Header[PNTS_PROP_RTC_CENTER].([]float64)
 	}
 
 	if m.FeatureTable.Header[PNTS_PROP_QUANTIZED_VOLUME_OFFSET] != nil {

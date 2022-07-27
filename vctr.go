@@ -121,7 +121,7 @@ func (h *VctrHeader) SetPointPositionsByteLength(n uint32) {
 
 type VctrFeatureTableView struct {
 	Region               *[6]float32
-	RtcCenter            [3]float32
+	RtcCenter            [3]float64
 	PointsLength         uint32
 	PointBatchId         interface{}
 	PolygonsLength       uint32
@@ -551,7 +551,7 @@ func (m *Vctr) GetFeatureTableView() VctrFeatureTableView {
 	}
 
 	if t := m.FeatureTable.Data[VCTR_PROP_RTC_CENTER]; t != nil {
-		copy(ret.RtcCenter[:], t.([]float32))
+		copy(ret.RtcCenter[:], t.([]float64))
 	}
 
 	if t := m.FeatureTable.Data[VCTR_PROP_REGION]; t != nil {

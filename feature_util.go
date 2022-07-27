@@ -266,8 +266,33 @@ func getFloatVec3FeatureValue(header map[string]interface{}, buff []byte, propNa
 			ret[i] = float32(oref[i])
 		}
 		return ret
+	case []interface{}:
+		ret := [3]float32{}
+		for i := 0; i < 3; i++ {
+			ret[i] = float32(oref[i].(float64))
+		}
+		return ret
 	}
 	return [3]float32{0, 0, 0}
+}
+
+func getFloat64Vec3FeatureValue(header map[string]interface{}, buff []byte, propName string) [3]float64 {
+	objValue := header[propName]
+	switch oref := objValue.(type) {
+	case []float64:
+		ret := [3]float64{}
+		for i := 0; i < 3; i++ {
+			ret[i] = oref[i]
+		}
+		return ret
+	case []interface{}:
+		ret := [3]float64{}
+		for i := 0; i < 3; i++ {
+			ret[i] = oref[i].(float64)
+		}
+		return ret
+	}
+	return [3]float64{0, 0, 0}
 }
 
 func getFloatVec4FeatureValue(header map[string]interface{}, buff []byte, propName string) [4]float32 {
@@ -298,6 +323,12 @@ func getFloatArrayFeatureValue(header map[string]interface{}, buff []byte, propN
 		ret := make([]float32, length)
 		for i := 0; i < length; i++ {
 			ret[i] = float32(oref[i])
+		}
+		return ret
+	case []interface{}:
+		ret := make([]float32, length)
+		for i := 0; i < length; i++ {
+			ret[i] = float32(oref[i].(float64))
 		}
 		return ret
 	case float64:

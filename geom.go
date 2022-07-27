@@ -93,7 +93,7 @@ type GeomFeatureTableView struct {
 	EllipsoidBatchId interface{}
 	Spheres          []GeomSphere
 	SphereBatchId    interface{}
-	RtcCenter        [3]float32
+	RtcCenter        [3]float64
 }
 
 func GeomFeatureTableDecode(header map[string]interface{}, buff []byte) map[string]interface{} {
@@ -277,7 +277,7 @@ func (m *Geom) GetFeatureTableView() GeomFeatureTableView {
 	ret := GeomFeatureTableView{}
 
 	if t := m.FeatureTable.Data[GEOM_PROP_RTC_CENTER]; t != nil {
-		copy(ret.RtcCenter[:], t.([]float32))
+		copy(ret.RtcCenter[:], t.([]float64))
 	}
 
 	if t := m.FeatureTable.Data[GEOM_PROP_BOXES_LENGTH]; t != nil {
