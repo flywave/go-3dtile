@@ -10,9 +10,12 @@ const (
 	BATCH_TABLE_HIERARCHY     = "3DTILES_batch_table_hierarchy"
 	HIERARCHY_INSTANCE_LENGTH = "instancesLength"
 
-	HIERARCHY_CLASSES      = "classes"
-	HIERARCHY_CLASSIDS     = "classIds"
-	HIERARCHY_CLASSINDEXES = "classIndexes"
+	HIERARCHY_CLASSES           = "classes"
+	HIERARCHY_CLASSIDS          = "classIds"
+	HIERARCHY_CLASSE_NAME       = "name"
+	HIERARCHY_CLASSINDEXES      = "classIndexes"
+	HIERARCHY_CLASSES_INSTANCES = "instances"
+	HIERARCHY_CLASSES_LENGTH    = "length"
 
 	HIERARCHY_PARENT_COUNTS = "parentCounts"
 	HIERARCHY_PARENTIDS     = "parentIds"

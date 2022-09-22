@@ -19,7 +19,7 @@ func TestLoadGlb(t *testing.T) {
 }
 
 func TestReadB3dm(t *testing.T) {
-	f1, _ := os.Open("./data/0-7.i3dm")
+	f1, _ := os.Open("./data/0-0.i3dm")
 	// bt := make([]byte, 69)
 	// f1.Read(bt)
 	// fmt.Println(string(bt))
@@ -30,12 +30,12 @@ func TestReadB3dm(t *testing.T) {
 }
 
 func TestReadi3dm(t *testing.T) {
-	f, _ := os.Open("data/7-20.b3dm")
+	f, _ := os.Open("data/1-103.b3dm")
 	// bt := make([]byte, 267)
 	// f.Read(bt)
 	// fmt.Println(string(bt))
 	b3d := &B3dm{}
 	b3d.Read(f)
 	bts, _ := mst.GetGltfBinary(b3d.Model, 8)
-	ioutil.WriteFile("./data/0-0.glb", bts, 0755)
+	ioutil.WriteFile("./data/0-103.glb", bts, 0755)
 }
