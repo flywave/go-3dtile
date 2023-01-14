@@ -19,14 +19,14 @@ func TestLoadGlb(t *testing.T) {
 }
 
 func TestReadB3dm(t *testing.T) {
-	f1, _ := os.Open("./data/0-0.i3dm")
+	f1, _ := os.Open("./data/0-8.i3dm")
 	// bt := make([]byte, 69)
 	// f1.Read(bt)
 	// fmt.Println(string(bt))
 	cp1 := &I3dm{}
 	cp1.Read(f1)
 	bts, _ := mst.GetGltfBinary(cp1.Model, 8)
-	ioutil.WriteFile("./data/0-0.glb", bts, 0755)
+	ioutil.WriteFile("./data/0-8.glb", bts, 0755)
 }
 
 func TestReadi3dm(t *testing.T) {
