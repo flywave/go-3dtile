@@ -3,6 +3,7 @@ github.com/flywave/go-3jsbin v0.0.0-20211111233441-249df4b81129 h1:aHx4IGIIH8SUj
 github.com/flywave/go-3jsbin v0.0.0-20211111233441-249df4b81129/go.mod h1:KBM01QUF2WPqukdY2878z/65/S708Q67V/OuqATaFGs=
 github.com/flywave/go-mst v0.0.0-20220613140218-f06b8ab84daf h1:e4X9IM/yN79Oob+EzLjJy6g3uY0ppA9TTQJXaOo5y0Y=
 github.com/flywave/go-mst v0.0.0-20220613140218-f06b8ab84daf/go.mod h1:g/N1/R1a5X4FUGBLy+FKeRt35GLAfAhEkZNce/xN4UY=
+github.com/flywave/go-proj v0.0.0-20211220121303-46dc797a5cd0 h1:WwkkpYaCJ7fiu2mGQm8fxbizQZapXrs0CCV0YyIofyg=
 github.com/flywave/go-proj v0.0.0-20211220121303-46dc797a5cd0/go.mod h1:RX83BRZNwcerL4DIU5TqQyKarhYx8W/cwTMYfSAwXiE=
 github.com/flywave/go3d v0.0.0-20210529142521-14eb5aca1290/go.mod h1:QbQZlarSgCPYFAmoTduiDUd4JCnolimXUswTAnSrFWY=
 github.com/flywave/go3d v0.0.0-20220209071216-2c50e8b3e7ff h1:B4CbtbuGiceyTFkhxrgA4OYw+TseiuU3CDJSQqGLoBU=
