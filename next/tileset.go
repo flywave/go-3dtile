@@ -3,7 +3,7 @@ package next
 import (
 	"encoding/json"
 
-	"github.com/flywave/go-3dtile/next/gltf"
+	ext_gltf "github.com/flywave/gltf/3dtile/gltf"
 )
 
 // Asset represents metadata about the entire tileset
@@ -139,7 +139,7 @@ type GroupMetadata struct {
 type Tileset struct {
 	Asset              Asset                      `json:"asset"`
 	Properties         map[string]json.RawMessage `json:"properties,omitempty"`
-	Schema             *gltf.Schema               `json:"schema,omitempty"`
+	Schema             *ext_gltf.Schema           `json:"schema,omitempty"`
 	SchemaURI          *string                    `json:"schemaUri,omitempty"`
 	Statistics         *Statistics                `json:"statistics,omitempty"`
 	Groups             []GroupMetadata            `json:"groups,omitempty"`

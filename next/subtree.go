@@ -3,14 +3,14 @@ package next
 import (
 	"encoding/json"
 
-	"github.com/flywave/go-3dtile/next/gltf"
+	ext_gltf "github.com/flywave/gltf/3dtile/gltf"
 )
 
 // Subtree describes the availability of tiles and content in a subtree
 type Subtree struct {
 	Buffers                  []Buffer                   `json:"buffers,omitempty"`
 	BufferViews              []BufferView               `json:"bufferViews,omitempty"`
-	PropertyTables           []gltf.PropertyTable       `json:"propertyTables,omitempty"`
+	PropertyTables           []ext_gltf.PropertyTable   `json:"propertyTables,omitempty"`
 	TileAvailability         Availability               `json:"tileAvailability"`
 	ContentAvailability      []Availability             `json:"contentAvailability,omitempty"`
 	ChildSubtreeAvailability Availability               `json:"childSubtreeAvailability"`
