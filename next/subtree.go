@@ -3,7 +3,7 @@ package next
 import (
 	"encoding/json"
 
-	ext_gltf "github.com/flywave/gltf/3dtile/gltf"
+	ext_gltf "github.com/flywave/gltf/ext/3dtile/gltf"
 )
 
 // Subtree describes the availability of tiles and content in a subtree
