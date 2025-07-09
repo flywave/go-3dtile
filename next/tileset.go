@@ -108,7 +108,7 @@ type Tile struct {
 	ViewerRequestVolume *BoundingVolume            `json:"viewerRequestVolume,omitempty"`
 	GeometricError      float64                    `json:"geometricError"`
 	Refine              *Refine                    `json:"refine,omitempty"`
-	Transform           [16]float64                `json:"transform,omitempty"`
+	Transform           *[16]float64               `json:"transform,omitempty"`
 	Content             *Content                   `json:"content,omitempty"`
 	Contents            []Content                  `json:"contents,omitempty"`
 	Metadata            *MetadataEntity            `json:"metadata,omitempty"`
@@ -123,7 +123,6 @@ func DefaultTile() Tile {
 	return Tile{
 		BoundingVolume: BoundingVolume{},
 		GeometricError: 0.0,
-		Transform:      [16]float64{1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1},
 	}
 }
 
