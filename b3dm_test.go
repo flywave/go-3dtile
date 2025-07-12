@@ -8,7 +8,7 @@ import (
 )
 
 func TestB3dm(t *testing.T) {
-	ph := "data/0-0.b3dm"
+	ph := "/home/hj/0-93.b3dm"
 	f, _ := os.Open(ph)
 	defer f.Close()
 	b3d := NewB3dm()
