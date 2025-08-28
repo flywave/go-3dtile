@@ -6,6 +6,29 @@ import (
 	"strings"
 )
 
+// Subtree represents a 3D Tiles subtree
+type Subtree struct {
+	SubtreeHeader                    *SubtreeHeader
+	SubtreeJson                      string
+	SubtreeBinary                    []byte
+	ChildSubtreeAvailability         []bool
+	ChildSubtreeAvailabilityConstant uint8
+	TileAvailability                 []bool
+	TileAvailabilityConstant         uint8
+	ContentAvailability              []bool
+	ContentAvailabilityConstant      uint8
+}
+
+// NewSubtree creates a new Subtree instance
+func NewSubtree() *Subtree {
+	return &Subtree{
+		SubtreeHeader:                    NewSubtreeHeader(),
+		TileAvailabilityConstant:         0,
+		ContentAvailabilityConstant:      0,
+		ChildSubtreeAvailabilityConstant: 0,
+	}
+}
+
 // ImplicitSubdivisionScheme represents the subdivision scheme
 type ImplicitSubdivisionScheme int
 
@@ -62,6 +85,24 @@ func (mo MortonOrder) Encode2D(x, y uint) uint {
 	return result
 }
 
+// Encode3D encodes 3D coordinates into Morton order
+func (mo MortonOrder) Encode3D(x, y, z uint) uint {
+	// Interleave bits of x, y, and z
+	result := uint(0)
+	for i := 0; i < 21; i++ { // 64 bits / 3 ≈ 21 iterations
+		if (x & (1 << i)) != 0 {
+			result |= 1 << (3 * i)
+		}
+		if (y & (1 << i)) != 0 {
+			result |= 1 << (3*i + 1)
+		}
+		if (z & (1 << i)) != 0 {
+			result |= 1 << (3*i + 2)
+		}
+	}
+	return result
+}
+
 // Decode2D decodes a Morton index into 2D coordinates
 func (mo MortonOrder) Decode2D(mortonIndex uint) (uint, uint) {
 	x := uint(0)
@@ -73,6 +114,21 @@ func (mo MortonOrder) Decode2D(mortonIndex uint) (uint, uint) {
 	}
 
 	return x, y
+}
+
+// Decode3D decodes a Morton index into 3D coordinates
+func (mo MortonOrder) Decode3D(mortonIndex uint) (uint, uint, uint) {
+	x := uint(0)
+	y := uint(0)
+	z := uint(0)
+
+	for i := 0; i < 21; i++ { // 64 bits / 3 ≈ 21 iterations
+		x |= ((mortonIndex >> (3 * i)) & 1) << i
+		y |= ((mortonIndex >> (3*i + 1)) & 1) << i
+		z |= ((mortonIndex >> (3*i + 2)) & 1) << i
+	}
+
+	return x, y, z
 }
 
 // BitArray2D represents a 2D bit array
@@ -286,4 +342,86 @@ func (al AvailabilityLevels) ToMortonIndex() string {
 		result.WriteString(level.ToMortonIndex())
 	}
 	return result.String()
+}
+
+// GetLevel 获取指定级别的 AvailabilityLevel
+func (al AvailabilityLevels) GetLevel(level int) *AvailabilityLevel {
+	for _, l := range al {
+		if l.Level == level {
+			return l
+		}
+	}
+	return nil
+}
+
+// MaxLevel 获取最大级别数
+func (al AvailabilityLevels) MaxLevel() int {
+	max := -1
+	for _, l := range al {
+		if l.Level > max {
+			max = l.Level
+		}
+	}
+	return max
+}
+
+// GetTileAvailabilityLevels calculates tile availability levels based on content availability levels
+func GetTileAvailabilityLevels(contentAvailabilityLevels AvailabilityLevels) AvailabilityLevels {
+	tileAvailabilityLevels := make(AvailabilityLevels, 0)
+
+	// 获取最大级别数
+	maxLevelNumber := contentAvailabilityLevels.MaxLevel()
+
+	// 为每个级别创建新的 AvailabilityLevel
+	for i := 0; i <= maxLevelNumber; i++ {
+		tileAvailabilityLevels = append(tileAvailabilityLevels, NewAvailabilityLevel(i))
+	}
+
+	// 特殊情况：如果最大级别为0且内容可用性在(0,0)位置为true
+	if maxLevelNumber == 0 {
+		contentLevel0 := contentAvailabilityLevels.GetLevel(0)
+		tileLevel0 := tileAvailabilityLevels.GetLevel(0)
+		if contentLevel0 != nil && contentLevel0.BitArray2D != nil &&
+			tileLevel0 != nil && tileLevel0.BitArray2D != nil &&
+			contentLevel0.BitArray2D.Get(0, 0) {
+			tileLevel0.BitArray2D.Set(0, 0, true)
+		}
+	}
+
+	// 从最高级别向下处理
+	for l := maxLevelNumber; l > 0; l-- {
+		currentContentLevel := contentAvailabilityLevels.GetLevel(l)
+		currentTileLevel := tileAvailabilityLevels.GetLevel(l)
+		parentTileLevel := tileAvailabilityLevels.GetLevel(l - 1)
+
+		// 确保所有级别都存在且 BitArray2D 不为 nil
+		if currentContentLevel == nil || currentContentLevel.BitArray2D == nil ||
+			currentTileLevel == nil || currentTileLevel.BitArray2D == nil ||
+			parentTileLevel == nil || parentTileLevel.BitArray2D == nil {
+			continue
+		}
+
+		w := currentTileLevel.BitArray2D.Width()
+		h := currentTileLevel.BitArray2D.Height()
+
+		// 遍历当前级别的所有坐标
+		for x := 0; x < w; x++ {
+			for y := 0; y < h; y++ {
+				// 如果内容可用或瓦片已可用
+				if currentContentLevel.BitArray2D.Get(x, y) || currentTileLevel.BitArray2D.Get(x, y) {
+					// 设置当前瓦片为可用
+					currentTileLevel.BitArray2D.Set(x, y, true)
+
+					// 计算父级坐标
+					parentX := x >> 1
+					parentY := y >> 1
+
+					// 设置父级瓦片为可用
+					parentTileLevel.BitArray2D.Set(parentX, parentY, true)
+				}
+			}
+		}
+	}
+
+	return tileAvailabilityLevels
 }

@@ -31,16 +31,25 @@ func GetSubtreeInfo(subtreeBytes []byte, scheme ImplicitSubdivisionScheme) (*Sub
 	// Extract tile availability
 	if subtree.TileAvailability != nil {
 		info.TileAvailability = AsString(subtree.TileAvailability)
+	} else if subtree.TileAvailabilityConstant != 0 {
+		// Handle constant tile availability
+		info.TileAvailability = fmt.Sprintf("%d", subtree.TileAvailabilityConstant)
 	}
 
 	// Extract content availability
 	if subtree.ContentAvailability != nil {
 		info.ContentAvailability = AsString(subtree.ContentAvailability)
+	} else if subtree.ContentAvailabilityConstant != 0 {
+		// Handle constant content availability
+		info.ContentAvailability = fmt.Sprintf("%d", subtree.ContentAvailabilityConstant)
 	}
 
 	// Extract child subtree availability
 	if subtree.ChildSubtreeAvailability != nil {
 		info.ChildSubtreeAvailability = AsString(subtree.ChildSubtreeAvailability)
+	} else if subtree.ChildSubtreeAvailabilityConstant != 0 {
+		// Handle constant child subtree availability
+		info.ChildSubtreeAvailability = fmt.Sprintf("%d", subtree.ChildSubtreeAvailabilityConstant)
 	}
 
 	return info, nil

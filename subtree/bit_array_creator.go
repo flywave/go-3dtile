@@ -16,11 +16,11 @@ func ToByteArray(bits []bool) []byte {
 	if len(bits) == 0 {
 		return []byte{}
 	}
-	
+
 	// Calculate the number of bytes needed
 	byteLength := (len(bits)-1)/8 + 1
 	result := make([]byte, byteLength)
-	
+
 	// Convert bits to bytes
 	for i, bit := range bits {
 		if bit {
@@ -29,7 +29,7 @@ func ToByteArray(bits []bool) []byte {
 			result[byteIndex] |= 1 << bitIndex
 		}
 	}
-	
+
 	return result
 }
 

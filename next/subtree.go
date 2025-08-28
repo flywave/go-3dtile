@@ -11,9 +11,9 @@ type Subtree struct {
 	Buffers                  []Buffer                   `json:"buffers,omitempty"`
 	BufferViews              []BufferView               `json:"bufferViews,omitempty"`
 	PropertyTables           []ext_gltf.PropertyTable   `json:"propertyTables,omitempty"`
-	TileAvailability         Availability               `json:"tileAvailability"`
+	TileAvailability         *Availability              `json:"tileAvailability,omitempty"`
 	ContentAvailability      []Availability             `json:"contentAvailability,omitempty"`
-	ChildSubtreeAvailability Availability               `json:"childSubtreeAvailability"`
+	ChildSubtreeAvailability *Availability              `json:"childSubtreeAvailability,omitempty"`
 	TileMetadata             *uint32                    `json:"tileMetadata,omitempty"`
 	ContentMetadata          []uint32                   `json:"contentMetadata,omitempty"`
 	SubtreeMetadata          *MetadataEntity            `json:"subtreeMetadata,omitempty"`

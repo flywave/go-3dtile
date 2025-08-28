@@ -2,17 +2,76 @@ package subtree
 
 import (
 	"encoding/json"
+
+	"github.com/flywave/go-3dtile/next"
 )
 
+const boundary = 8
+
+// AddPadding adds padding to a byte array
+func AddPadding(bytes []byte, offset int) []byte {
+	remainder := (offset + len(bytes)) % boundary
+	padding := 0
+	if remainder != 0 {
+		padding = boundary - remainder
+	}
+
+	// Create padding bytes (whitespace)
+	paddingBytes := make([]byte, padding)
+	for i := range paddingBytes {
+		paddingBytes[i] = ' '
+	}
+
+	// Concatenate original bytes with padding
+	result := make([]byte, len(bytes)+padding)
+	copy(result, bytes)
+	copy(result[len(bytes):], paddingBytes)
+
+	return result
+}
+
+// AddPaddingString adds padding to a string
+func AddPaddingString(input string, offset int) string {
+	bytes := []byte(input)
+	paddedBytes := AddPadding(bytes, offset)
+	return string(paddedBytes)
+}
+
+// AddBinaryPadding adds binary padding to a byte array
+func AddBinaryPadding(bytes []byte, offset int) []byte {
+	remainder := (offset + len(bytes)) % boundary
+	padding := 0
+	if remainder != 0 {
+		padding = boundary - remainder
+	}
+
+	// Create padding bytes (zeros)
+	paddingBytes := make([]byte, padding)
+
+	// Concatenate original bytes with padding
+	result := make([]byte, len(bytes)+padding)
+	copy(result, bytes)
+	copy(result[len(bytes):], paddingBytes)
+
+	return result
+}
+
+// GetByteArray creates a byte array of the specified length filled with zeros
+func GetByteArray(length int) []byte {
+	arr := make([]byte, length)
+	// Already filled with zeros by default
+	return arr
+}
+
 // HandleBitArray processes a bit array and returns the bytes, true bit count, and buffer view
-func HandleBitArray(bitArray []bool) ([]byte, int, *BufferView) {
+func HandleBitArray(bitArray []bool) ([]byte, int, *next.BufferView) {
 	trueBits := Count(bitArray, true)
 	bits := ToByteArray(bitArray)
 	bytes := AddBinaryPadding(bits, 0)
 
-	bufferView := &BufferView{
+	bufferView := &next.BufferView{
 		Buffer:     0,
-		ByteLength: len(bits),
+		ByteLength: uint32(len(bits)),
 		ByteOffset: 0,
 	}
 
@@ -20,10 +79,10 @@ func HandleBitArray(bitArray []bool) ([]byte, int, *BufferView) {
 }
 
 // ToSubtreeBinary converts a subtree to its binary representation
-func ToSubtreeBinary(subtree *Subtree) ([]byte, *SubtreeJson) {
+func ToSubtreeBinary(subtree *Subtree) ([]byte, *next.Subtree) {
 	substreamBinary := []byte{}
-	subtreeJson := &SubtreeJson{}
-	bufferViews := []BufferView{}
+	subtreeJson := &next.Subtree{}
+	bufferViews := []next.BufferView{}
 
 	// Process tile availability
 	if subtree.TileAvailability != nil {
@@ -31,34 +90,34 @@ func ToSubtreeBinary(subtree *Subtree) ([]byte, *SubtreeJson) {
 		bufferViews = append(bufferViews, *bufferView)
 		substreamBinary = append(substreamBinary, resultTileAvailability...)
 
-		subtreeJson.TileAvailability = &TileAvailability{
-			Bitstream:      intPtr(0),
-			AvailableCount: intPtr(trueBits),
+		subtreeJson.TileAvailability = &next.Availability{
+			Bitstream:      uint32Ptr(0),
+			AvailableCount: uint32Ptr(uint32(trueBits)),
 		}
 	} else {
-		subtreeJson.TileAvailability = &TileAvailability{
-			Constant: intPtr(subtree.TileAvailabilityConstant),
+		subtreeJson.TileAvailability = &next.Availability{
+			Constant: uint8Ptr(subtree.TileAvailabilityConstant),
 		}
 	}
 
 	// Process content availability
 	if subtree.ContentAvailability != nil {
 		resultContentAvailability, trueBits, bufferView := HandleBitArray(subtree.ContentAvailability)
-		bufferView.ByteOffset = len(substreamBinary)
+		bufferView.ByteOffset = uint32(len(substreamBinary))
 
-		subtreeJson.ContentAvailability = []ContentAvailability{
+		subtreeJson.ContentAvailability = []next.Availability{
 			{
-				Bitstream:      intPtr(len(bufferViews)),
-				AvailableCount: trueBits,
+				Bitstream:      uint32Ptr(uint32(len(bufferViews))),
+				AvailableCount: uint32Ptr(uint32(trueBits)),
 			},
 		}
 
 		bufferViews = append(bufferViews, *bufferView)
 		substreamBinary = append(substreamBinary, resultContentAvailability...)
 	} else {
-		subtreeJson.ContentAvailability = []ContentAvailability{
+		subtreeJson.ContentAvailability = []next.Availability{
 			{
-				Constant: intPtr(subtree.ContentAvailabilityConstant),
+				Constant: uint8Ptr(subtree.ContentAvailabilityConstant),
 			},
 		}
 	}
@@ -66,25 +125,25 @@ func ToSubtreeBinary(subtree *Subtree) ([]byte, *SubtreeJson) {
 	// Process child subtree availability
 	if subtree.ChildSubtreeAvailability != nil {
 		resultSubstreamAvailability, trueBits, bufferView := HandleBitArray(subtree.ChildSubtreeAvailability)
-		bufferView.ByteOffset = len(substreamBinary)
+		bufferView.ByteOffset = uint32(len(substreamBinary))
 
-		subtreeJson.ChildSubtreeAvailability = &ChildSubtreeAvailability{
-			Bitstream:      intPtr(len(bufferViews)),
-			AvailableCount: trueBits,
+		subtreeJson.ChildSubtreeAvailability = &next.Availability{
+			Bitstream:      uint32Ptr(uint32(len(bufferViews))),
+			AvailableCount: uint32Ptr(uint32(trueBits)),
 		}
 
 		bufferViews = append(bufferViews, *bufferView)
 		substreamBinary = append(substreamBinary, resultSubstreamAvailability...)
 	} else {
-		subtreeJson.ChildSubtreeAvailability = &ChildSubtreeAvailability{
-			Constant: intPtr(0),
+		subtreeJson.ChildSubtreeAvailability = &next.Availability{
+			Constant: uint8Ptr(0),
 		}
 	}
 
 	// Set buffers and buffer views
-	subtreeJson.Buffers = []Buffer{
+	subtreeJson.Buffers = []next.Buffer{
 		{
-			ByteLength: len(substreamBinary),
+			ByteLength: uint32(len(substreamBinary)),
 		},
 	}
 
@@ -146,6 +205,10 @@ func ToBytesFromStrings(tileAvailability string, contentAvailability string, sub
 }
 
 // Helper function to create pointer to int
-func intPtr(i int) *int {
+func uint32Ptr(i uint32) *uint32 {
+	return &i
+}
+
+func uint8Ptr(i uint8) *uint8 {
 	return &i
 }

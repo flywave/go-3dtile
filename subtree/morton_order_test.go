@@ -4,74 +4,101 @@ import (
 	"testing"
 )
 
-func TestMortonOrderEncode2D(t *testing.T) {
-	// Test basic cases
-	tests := []struct {
-		x, y     uint
-		expected uint
-	}{
-		{0, 0, 0}, // binary: 000
-		{1, 0, 1}, // binary: 001
-		{0, 1, 2}, // binary: 010
-		{1, 1, 3}, // binary: 011
-		{2, 0, 4}, // binary: 100
-		{3, 0, 5}, // binary: 101
-		{2, 1, 6}, // binary: 110
-		{3, 1, 7}, // binary: 111
-		{7, 5, 55}, // binary: 110111
+func TestMortonOrder_Encode3D(t *testing.T) {
+	mo := MortonOrder{}
+
+	// Test case 1: (0, 0, 0) should encode to 0
+	result := mo.Encode3D(0, 0, 0)
+	expected := uint(0)
+	if result != expected {
+		t.Errorf("Encode3D(0, 0, 0) = %d; expected %d", result, expected)
 	}
 
-	for _, test := range tests {
-		result := MortonOrder{}.Encode2D(test.x, test.y)
-		if result != test.expected {
-			t.Errorf("Encode2D(%d, %d) = %d, expected %d", test.x, test.y, result, test.expected)
-		}
+	// Test case 2: (1, 0, 0) should encode to 1
+	result = mo.Encode3D(1, 0, 0)
+	expected = uint(1)
+	if result != expected {
+		t.Errorf("Encode3D(1, 0, 0) = %d; expected %d", result, expected)
+	}
+
+	// Test case 3: (0, 1, 0) should encode to 2
+	result = mo.Encode3D(0, 1, 0)
+	expected = uint(2)
+	if result != expected {
+		t.Errorf("Encode3D(0, 1, 0) = %d; expected %d", result, expected)
+	}
+
+	// Test case 4: (0, 0, 1) should encode to 4
+	result = mo.Encode3D(0, 0, 1)
+	expected = uint(4)
+	if result != expected {
+		t.Errorf("Encode3D(0, 0, 1) = %d; expected %d", result, expected)
+	}
+
+	// Test case 5: (1, 1, 1) should encode to 7
+	result = mo.Encode3D(1, 1, 1)
+	expected = uint(7)
+	if result != expected {
+		t.Errorf("Encode3D(1, 1, 1) = %d; expected %d", result, expected)
 	}
 }
 
-func TestMortonOrderRoundTrip(t *testing.T) {
-	// Test round trip conversion
-	// Sample from: https://github.com/CesiumGS/3d-tiles/blob/draft-1.1/specification/ImplicitTiling/AVAILABILITY.adoc#implicittiling-availability-indexing
-	mortonIndex := uint(0b010011)
+func TestMortonOrder_Decode3D(t *testing.T) {
 	mo := MortonOrder{}
-	// Decode the morton index
-	x, y := mo.Decode2D(mortonIndex)
-	
-	// Check if we get the expected values
-	if x != 5 || y != 1 {
-		t.Errorf("Decode2D(0b010011) = (%d, %d), expected (5, 1)", x, y)
+
+	// Test case 1: 0 should decode to (0, 0, 0)
+	x, y, z := mo.Decode3D(0)
+	if x != 0 || y != 0 || z != 0 {
+		t.Errorf("Decode3D(0) = (%d, %d, %d); expected (0, 0, 0)", x, y, z)
 	}
-	
-	// Re-encode and check if we get the same value
-	reencoded := mo.Encode2D(x, y)
-	if reencoded != mortonIndex {
-		t.Errorf("Encode2D(%d, %d) = %d, expected %d", x, y, reencoded, mortonIndex)
+
+	// Test case 2: 1 should decode to (1, 0, 0)
+	x, y, z = mo.Decode3D(1)
+	if x != 1 || y != 0 || z != 0 {
+		t.Errorf("Decode3D(1) = (%d, %d, %d); expected (1, 0, 0)", x, y, z)
+	}
+
+	// Test case 3: 2 should decode to (0, 1, 0)
+	x, y, z = mo.Decode3D(2)
+	if x != 0 || y != 1 || z != 0 {
+		t.Errorf("Decode3D(2) = (%d, %d, %d); expected (0, 1, 0)", x, y, z)
+	}
+
+	// Test case 4: 4 should decode to (0, 0, 1)
+	x, y, z = mo.Decode3D(4)
+	if x != 0 || y != 0 || z != 1 {
+		t.Errorf("Decode3D(4) = (%d, %d, %d); expected (0, 0, 1)", x, y, z)
+	}
+
+	// Test case 5: 7 should decode to (1, 1, 1)
+	x, y, z = mo.Decode3D(7)
+	if x != 1 || y != 1 || z != 1 {
+		t.Errorf("Decode3D(7) = (%d, %d, %d); expected (1, 1, 1)", x, y, z)
 	}
 }
 
-func TestMortonOrderDecode2D(t *testing.T) {
-	// Test decoding cases
-	tests := []struct {
-		mortonIndex uint
-		expectedX   uint
-		expectedY   uint
+func TestMortonOrder_EncodeDecode3D(t *testing.T) {
+	mo := MortonOrder{}
+
+	// Test that encoding and then decoding returns the original values
+	testCases := []struct {
+		x, y, z uint
 	}{
-		{0, 0, 0},  // binary: 000
-		{1, 1, 0},  // binary: 001
-		{2, 0, 1},  // binary: 010
-		{3, 1, 1},  // binary: 011
-		{4, 2, 0},  // binary: 100
-		{5, 3, 0},  // binary: 101
-		{6, 2, 1},  // binary: 110
-		{7, 3, 1},  // binary: 111
-		{55, 7, 5}, // binary: 110111
+		{0, 0, 0},
+		{1, 0, 0},
+		{0, 1, 0},
+		{0, 0, 1},
+		{1, 1, 1},
+		{2, 3, 4},
+		{7, 5, 3},
 	}
 
-	mo := MortonOrder{}
-	for _, test := range tests {
-		x, y := mo.Decode2D(test.mortonIndex)
-		if x != test.expectedX || y != test.expectedY {
-			t.Errorf("Decode2D(%d) = (%d, %d), expected (%d, %d)", test.mortonIndex, x, y, test.expectedX, test.expectedY)
+	for _, tc := range testCases {
+		encoded := mo.Encode3D(tc.x, tc.y, tc.z)
+		x, y, z := mo.Decode3D(encoded)
+		if x != tc.x || y != tc.y || z != tc.z {
+			t.Errorf("Encode3D(%d, %d, %d) = %d; Decode3D(%d) = (%d, %d, %d); expected (%d, %d, %d)",
+				tc.x, tc.y, tc.z, encoded, encoded, x, y, z, tc.x, tc.y, tc.z)
 		}
 	}
 }
