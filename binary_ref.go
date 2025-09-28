@@ -112,7 +112,7 @@ func createReference(offset uint32, componentType *string, containerType *string
 func addReference(jsonHeader *map[string]interface{}, property string, offset uint32, componentType string, containerType string, feature bool) error {
 	var reference map[string]interface{}
 	if feature {
-		if "BATCH_ID" == property {
+		if property == "BATCH_ID" {
 			if containerType != CONTAINER_TYPE_SCALAR {
 				return errors.New("Invalid container type for BATCH_ID: " + containerType + ".")
 			}

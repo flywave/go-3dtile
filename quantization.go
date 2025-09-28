@@ -17,7 +17,7 @@ func computeScale(extent float32, rangeScale uint16) float32 {
 }
 
 func isInRange(qpos uint16, rangeScale uint16) bool {
-	return qpos >= 0 && qpos < rangeScale+1
+	return qpos < rangeScale+1
 }
 
 func Quantize(pos float64, origin float32, scale float32, rangeScale uint16) uint16 {

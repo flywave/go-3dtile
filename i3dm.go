@@ -340,13 +340,13 @@ func (m *I3dm) SetFeatureTable(view I3dmFeatureTableView) {
 	}
 
 	m.FeatureTable.Header[I3DM_PROP_INSTANCES_LENGTH] = view.InstanceLength
-	if view.RtcCenter != nil && len(view.RtcCenter) == 3 {
+	if len(view.RtcCenter) == 3 {
 		m.FeatureTable.Header[I3DM_PROP_RTC_CENTER] = view.RtcCenter
 	}
-	if view.QuantizedVolumeOffset != nil && len(view.QuantizedVolumeOffset) == 3 {
+	if len(view.QuantizedVolumeOffset) == 3 {
 		m.FeatureTable.Header[I3DM_PROP_QUANTIZED_VOLUME_OFFSET] = view.QuantizedVolumeOffset
 	}
-	if view.QuantizedVolumeScale != nil && len(view.QuantizedVolumeScale) == 3 {
+	if len(view.QuantizedVolumeScale) == 3 {
 		m.FeatureTable.Header[I3DM_PROP_QUANTIZED_VOLUME_SCALE] = view.QuantizedVolumeScale
 	}
 	if view.EastNorthUp != nil {
@@ -456,18 +456,19 @@ func (m *I3dm) Read(reader io.ReadSeeker) error {
 		return err
 	}
 
-	if m.Header.GltfFormat == 0 {
+	switch m.Header.GltfFormat {
+	case 0:
 		var uri []byte
 		if _, err := io.ReadAtLeast(reader, uri, 0); err != nil {
 			return err
 		}
 		m.GltfUri = string(uri)
-	} else if m.Header.GltfFormat == 1 {
+	case 1:
 		var err1 error
 		if m.Model, err1 = loadGltfFromByte(reader); err1 != nil {
 			return err1
 		}
-	} else {
+	default:
 		panic("GltfFormat must 0 or 1")
 	}
 	return nil
@@ -478,9 +479,10 @@ func (m *I3dm) Write(writer io.Writer) error {
 	m.FeatureTable.encode = I3dmFeatureTableEncode
 	_ = I3dmFeatureTableEncode(m.FeatureTable.Header, m.FeatureTable.Data)
 
-	if m.Header.GltfFormat == 0 {
+	switch m.Header.GltfFormat {
+	case 0:
 		buf = createPaddingBytes([]byte(m.GltfUri), uint32(len(m.GltfUri)), 4, 0x20)
-	} else if m.Header.GltfFormat == 1 {
+	case 1:
 		var err1 error
 		if buf, err1 = getGltfBinary(m.Model, 8); err1 != nil {
 			return err1

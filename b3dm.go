@@ -107,7 +107,7 @@ func (m *B3dm) SetFeatureTable(view B3dmFeatureTableView) {
 		m.FeatureTable.Header = make(map[string]interface{})
 	}
 	m.FeatureTable.Header[B3DM_PROP_BATCH_LENGTH] = view.BatchLength
-	if view.RtcCenter != nil && len(view.RtcCenter) == 3 {
+	if len(view.RtcCenter) == 3 {
 		m.FeatureTable.Header[B3DM_PROP_RTC_CENTER] = view.RtcCenter
 	}
 }

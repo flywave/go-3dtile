@@ -365,16 +365,16 @@ func (m *Pnts) SetFeatureTable(view PntsFeatureTableView) {
 	}
 
 	m.FeatureTable.Header[PNTS_PROP_POINTS_LENGTH] = view.PointsLength
-	if view.RtcCenter != nil && len(view.RtcCenter) == 3 {
+	if len(view.RtcCenter) == 3 {
 		m.FeatureTable.Header[PNTS_PROP_RTC_CENTER] = view.RtcCenter
 	}
-	if view.QuantizedVolumeOffset != nil && len(view.QuantizedVolumeOffset) == 3 {
+	if len(view.QuantizedVolumeOffset) == 3 {
 		m.FeatureTable.Header[PNTS_PROP_QUANTIZED_VOLUME_OFFSET] = view.QuantizedVolumeOffset
 	}
-	if view.QuantizedVolumeScale != nil && len(view.QuantizedVolumeScale) == 3 {
+	if len(view.QuantizedVolumeScale) == 3 {
 		m.FeatureTable.Header[PNTS_PROP_QUANTIZED_VOLUME_SCALE] = view.QuantizedVolumeScale
 	}
-	if view.ConstantRGBA != nil && len(view.ConstantRGBA) == 4 {
+	if len(view.ConstantRGBA) == 4 {
 		m.FeatureTable.Header[PNTS_PROP_CONSTANT_RGBA] = view.ConstantRGBA
 	}
 	if view.BatchLength != nil {
