@@ -296,6 +296,70 @@ func TestTilesetExtensions(t *testing.T) {
 	}
 }
 
+func TestValidateSubtreeURITemplate(t *testing.T) {
+	if err := ValidateSubtreeURITemplate("subtrees/{level}/{x}/{y}.subtree", SubdivisionSchemeQuadtree); err != nil {
+		t.Errorf("valid quadtree URI should pass: %v", err)
+	}
+	if err := ValidateSubtreeURITemplate("subtrees/{level}/{x}/{y}/{z}.subtree", SubdivisionSchemeOctree); err != nil {
+		t.Errorf("valid octree URI should pass: %v", err)
+	}
+	if err := ValidateSubtreeURITemplate("subtrees/{x}/{y}.subtree", SubdivisionSchemeQuadtree); err == nil {
+		t.Error("missing {level} should fail")
+	}
+	if err := ValidateSubtreeURITemplate("subtrees/{level}/{x}/{y}.subtree", SubdivisionSchemeOctree); err == nil {
+		t.Error("octree missing {z} should fail")
+	}
+}
+
+func TestValidateContentGroup(t *testing.T) {
+	groups := []GroupMetadata{{Class: "a"}, {Class: "b"}}
+	if err := ValidateContentGroup(0, groups); err != nil {
+		t.Errorf("valid group should pass: %v", err)
+	}
+	if err := ValidateContentGroup(1, groups); err != nil {
+		t.Errorf("valid group should pass: %v", err)
+	}
+	if err := ValidateContentGroup(2, groups); err == nil {
+		t.Error("out-of-range group should fail")
+	}
+}
+
+func TestValidateImplicitTiling(t *testing.T) {
+	it := &ImplicitTiling{
+		SubdivisionScheme: SubdivisionSchemeQuadtree,
+		SubtreeLevels:     7,
+		AvailableLevels:   21,
+		Subtrees:          Subtrees{URI: "subtrees/{level}/{x}/{y}.subtree"},
+	}
+	if err := ValidateImplicitTiling(it); err != nil {
+		t.Errorf("valid implicit tiling should pass: %v", err)
+	}
+
+	it2 := &ImplicitTiling{
+		SubdivisionScheme: SubdivisionSchemeOctree,
+		SubtreeLevels:     5,
+		AvailableLevels:   10,
+		Subtrees:          Subtrees{URI: "subtrees/{level}/{x}/{y}/{z}.subtree"},
+	}
+	if err := ValidateImplicitTiling(it2); err != nil {
+		t.Errorf("valid octree implicit tiling should pass: %v", err)
+	}
+
+	it3 := &ImplicitTiling{SubdivisionScheme: "INVALID", SubtreeLevels: 1, AvailableLevels: 1, Subtrees: Subtrees{URI: "subtrees/{level}/{x}/{y}.subtree"}}
+	if err := ValidateImplicitTiling(it3); err == nil {
+		t.Error("invalid scheme should fail")
+	}
+
+	it4 := &ImplicitTiling{SubdivisionScheme: SubdivisionSchemeQuadtree, SubtreeLevels: 0, AvailableLevels: 1, Subtrees: Subtrees{URI: "subtrees/{level}/{x}/{y}.subtree"}}
+	if err := ValidateImplicitTiling(it4); err == nil {
+		t.Error("zero subtreeLevels should fail")
+	}
+
+	if err := ValidateImplicitTiling(nil); err != nil {
+		t.Error("nil should pass")
+	}
+}
+
 func refPtr(r Refine) *Refine {
 	return &r
 }

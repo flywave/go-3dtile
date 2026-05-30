@@ -22,7 +22,7 @@ type Asset struct {
 }
 
 type Content struct {
-	Url string `json:"uri"`
+	URI string `json:"uri"`
 }
 
 type Schema struct {
@@ -99,10 +99,11 @@ func (b *BoundingVolume) GetData() []float64 {
 
 const MULTIPLE_CONTENTS = "3DTILES_multiple_contents"
 
-type MultipeContent []*Content
+type MultipleContent []*Content
 
 type Tile struct {
 	Content             *Content               `json:"content,omitempty"`
+	Contents            []Content              `json:"contents,omitempty"`
 	BoundingVolume      BoundingVolume         `json:"boundingVolume,omitempty"`
 	ViewerRequestVolume *BoundingVolume        `json:"viewerRequestVolume,omitempty"`
 	GeometricError      float64                `json:"geometricError"`
@@ -110,15 +111,18 @@ type Tile struct {
 	Transform           *[16]float64           `json:"transform,omitempty"`
 	Children            []Tile                 `json:"children,omitempty"`
 	Extensions          map[string]interface{} `json:"extensions,omitempty"`
+	Extras              map[string]interface{} `json:"extras,omitempty"`
 }
 
 type Tileset struct {
-	Asset              Asset              `json:"asset"`
-	GeometricError     float64            `json:"geometricError"`
-	Root               Tile               `json:"root"`
-	Properties         *map[string]Schema `json:"properties,omitempty"`
-	ExtensionsUsed     []string           `json:"extensionsUsed,omitempty"`
-	ExtensionsRequired []string           `json:"extensionsRequired,omitempty"`
+	Asset              Asset                      `json:"asset"`
+	GeometricError     float64                    `json:"geometricError"`
+	Root               Tile                       `json:"root"`
+	Properties         map[string]Schema          `json:"properties,omitempty"`
+	ExtensionsUsed     []string                   `json:"extensionsUsed,omitempty"`
+	ExtensionsRequired []string                   `json:"extensionsRequired,omitempty"`
+	Extensions         map[string]interface{}     `json:"extensions,omitempty"`
+	Extras             map[string]interface{}     `json:"extras,omitempty"`
 }
 
 func (ts *Tileset) ToJson() (string, error) {

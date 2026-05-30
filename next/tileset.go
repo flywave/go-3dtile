@@ -2,6 +2,9 @@ package next
 
 import (
 	"encoding/json"
+	"errors"
+	"fmt"
+	"strings"
 
 	ext_gltf "github.com/flywave/gltf/ext/3dtile/gltf"
 )
@@ -191,4 +194,52 @@ type StatisticsProperty struct {
 // IsIdentityMatrix checks if a 4x4 matrix is the identity matrix
 func IsIdentityMatrix(m [16]float64) bool {
 	return m == [16]float64{1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1}
+}
+
+// ValidateSubtreeURITemplate checks that the subtree URI template contains the required
+// placeholders: {level}, {x}, {y} (and {z} for octree).
+func ValidateSubtreeURITemplate(uri string, scheme SubdivisionScheme) error {
+	if !strings.Contains(uri, "{level}") {
+		return errors.New("subtree URI template must contain {level}")
+	}
+	if !strings.Contains(uri, "{x}") {
+		return errors.New("subtree URI template must contain {x}")
+	}
+	if !strings.Contains(uri, "{y}") {
+		return errors.New("subtree URI template must contain {y}")
+	}
+	if scheme == SubdivisionSchemeOctree && !strings.Contains(uri, "{z}") {
+		return errors.New("octree subtree URI template must contain {z}")
+	}
+	return nil
+}
+
+// ValidateContentGroup checks that the content group index is within the bounds
+// of the tileset's groups array.
+func ValidateContentGroup(group uint32, groups []GroupMetadata) error {
+	if int(group) >= len(groups) {
+		return fmt.Errorf("content group index %d out of range: groups has %d entries", group, len(groups))
+	}
+	return nil
+}
+
+// ValidateImplicitTiling validates implicit tiling configuration including
+// subtree levels, available levels, and URI template.
+func ValidateImplicitTiling(it *ImplicitTiling) error {
+	if it == nil {
+		return nil
+	}
+	if it.SubdivisionScheme != SubdivisionSchemeQuadtree && it.SubdivisionScheme != SubdivisionSchemeOctree {
+		return fmt.Errorf("invalid subdivision scheme: %q", it.SubdivisionScheme)
+	}
+	if it.SubtreeLevels == 0 {
+		return errors.New("subtreeLevels must be greater than 0")
+	}
+	if it.AvailableLevels == 0 {
+		return errors.New("availableLevels must be greater than 0")
+	}
+	if it.SubtreeLevels > it.AvailableLevels {
+		return errors.New("subtreeLevels must not exceed availableLevels")
+	}
+	return ValidateSubtreeURITemplate(it.Subtrees.URI, it.SubdivisionScheme)
 }
