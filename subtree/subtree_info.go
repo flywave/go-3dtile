@@ -155,23 +155,18 @@ func PrintBitArray2D(bitArray2D *BitArray2D) {
 	fmt.Println()
 }
 
-// GetNumberOfLevels calculates the number of levels in an availability string
+// GetNumberOfLevels calculates the number of complete levels in an availability string
 func GetNumberOfLevels(availability string, scheme ImplicitSubdivisionScheme) int {
-	level := 0
 	length := len(availability)
-	cont := true
-
-	lo := LevelOffset{}
-	for cont {
-		offset := lo.GetLevelOffset(level, scheme)
-		offsetNext := lo.GetLevelOffset(level+1, scheme)
-
-		if offset < length && offsetNext > length {
-			cont = false
-		} else {
-			level++
-		}
+	if length == 0 {
+		return 0
 	}
 
-	return level
+	lo := LevelOffset{}
+	for level := 0; ; level++ {
+		offsetNext := lo.GetLevelOffset(level+1, scheme)
+		if offsetNext >= length {
+			return level + 1
+		}
+	}
 }

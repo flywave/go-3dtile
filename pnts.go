@@ -114,7 +114,7 @@ func PntsFeatureTableDecode(header map[string]interface{}, buff []byte) map[stri
 		ret[PNTS_PROP_CONSTANT_RGBA] = constantRgba
 	}
 
-	rgba := getUnsignedByteArrayFeatureValue(header, buff, PNTS_PROP_RGBA, 3)
+	rgba := getUnsignedByteArrayFeatureValue(header, buff, PNTS_PROP_RGBA, 4)
 	if rgba != nil {
 		ret[PNTS_PROP_RGBA] = rgba
 	}
@@ -131,8 +131,8 @@ func PntsFeatureTableDecode(header map[string]interface{}, buff []byte) map[stri
 	unsignedShortArrayValue := getUnsignedShortArrayFeatureValue(header, buff, PNTS_PROP_POSITION_QUANTIZED, int(pointsLength*3))
 	if unsignedShortArrayValue != nil {
 		ret[PNTS_PROP_POSITION_QUANTIZED] = unsignedShortArrayValue
-		ret[PNTS_PROP_QUANTIZED_VOLUME_OFFSET] = getFloatVec3FeatureValue(header, buff, I3DM_PROP_QUANTIZED_VOLUME_OFFSET)
-		ret[PNTS_PROP_QUANTIZED_VOLUME_SCALE] = getFloatVec3FeatureValue(header, buff, I3DM_PROP_QUANTIZED_VOLUME_SCALE)
+		ret[PNTS_PROP_QUANTIZED_VOLUME_OFFSET] = getFloatVec3FeatureValue(header, buff, PNTS_PROP_QUANTIZED_VOLUME_OFFSET)
+		ret[PNTS_PROP_QUANTIZED_VOLUME_SCALE] = getFloatVec3FeatureValue(header, buff, PNTS_PROP_QUANTIZED_VOLUME_SCALE)
 	}
 	if _, ok := header[PNTS_PROP_QUANTIZED_VOLUME_OFFSET]; ok {
 		ret[PNTS_PROP_QUANTIZED_VOLUME_OFFSET] = getFloatVec3FeatureValue(header, buff, PNTS_PROP_QUANTIZED_VOLUME_OFFSET)
@@ -142,7 +142,7 @@ func PntsFeatureTableDecode(header map[string]interface{}, buff []byte) map[stri
 	}
 
 	if _, ok := header[PNTS_PROP_RTC_CENTER]; ok {
-		ret[PNTS_PROP_RTC_CENTER] = getFloat64Vec3FeatureValue(header, buff, PNTS_PROP_QUANTIZED_VOLUME_SCALE)
+		ret[PNTS_PROP_RTC_CENTER] = getFloat64Vec3FeatureValue(header, buff, PNTS_PROP_RTC_CENTER)
 	}
 
 	reference := getBinaryBodyReference(header, PNTS_PROP_RGBA)
@@ -184,7 +184,7 @@ func PntsFeatureTableDecode(header map[string]interface{}, buff []byte) map[stri
 	}
 	byteArrayValue := getUnsignedByteArrayFeatureValue(header, buff, PNTS_PROP_NORMAL_OCT32P, int(pointsLength*2))
 	if byteArrayValue != nil {
-		ret[PNTS_PROP_NORMAL_OCT32P] = floatArrayValue
+		ret[PNTS_PROP_NORMAL_OCT32P] = byteArrayValue
 	}
 	unsignedIntArrayValue := getBatchLength(header, buff, int(pointsLength))
 	if unsignedIntArrayValue != nil {
@@ -330,13 +330,13 @@ func (m *Pnts) SetFeatureTable(view PntsFeatureTableView) {
 		switch t := view.BatchId.(type) {
 		case []uint8:
 			m.FeatureTable.Header[PNTS_PROP_BATCH_ID] = BinaryBodyReference{ComponentType: COMPONENT_TYPE_UNSIGNED_BYTE, ContainerType: CONTAINER_TYPE_SCALAR}
-			m.FeatureTable.Header[PNTS_PROP_BATCH_ID] = t
+			m.FeatureTable.Data[PNTS_PROP_BATCH_ID] = t
 		case []uint16:
 			m.FeatureTable.Header[PNTS_PROP_BATCH_ID] = BinaryBodyReference{ComponentType: COMPONENT_TYPE_UNSIGNED_SHORT, ContainerType: CONTAINER_TYPE_SCALAR}
-			m.FeatureTable.Header[PNTS_PROP_BATCH_ID] = t
+			m.FeatureTable.Data[PNTS_PROP_BATCH_ID] = t
 		case []uint32:
 			m.FeatureTable.Header[PNTS_PROP_BATCH_ID] = BinaryBodyReference{ComponentType: COMPONENT_TYPE_UNSIGNED_INT, ContainerType: CONTAINER_TYPE_SCALAR}
-			m.FeatureTable.Header[PNTS_PROP_BATCH_ID] = t
+			m.FeatureTable.Data[PNTS_PROP_BATCH_ID] = t
 		case []int64:
 			max := maxBatchId(t)
 			if max > 0xFFFF {

@@ -8,8 +8,8 @@ import (
 	"github.com/flywave/go-3dtile/next"
 )
 
-// Read reads a bit array from a byte array with the specified offset and length
-func Read(subtreeBinary []byte, offset int, length int) []bool {
+// ReadBitArray reads a bit array from a byte array with the specified offset and length
+func ReadBitArray(subtreeBinary []byte, offset int, length int) []bool {
 	// Ensure we don't go out of bounds
 	if offset < 0 || offset >= len(subtreeBinary) {
 		return []bool{}
@@ -78,7 +78,7 @@ func ReadSubtreeFromReader(reader io.Reader) (*Subtree, error) {
 	if subtreeJson.TileAvailability != nil {
 		if subtreeJson.TileAvailability.Bitstream != nil {
 			bufferView := subtreeJson.BufferViews[*subtreeJson.TileAvailability.Bitstream]
-			subtree.TileAvailability = Read(subtree.SubtreeBinary, int(bufferView.ByteOffset), int(bufferView.ByteLength))
+			subtree.TileAvailability = ReadBitArray(subtree.SubtreeBinary, int(bufferView.ByteOffset), int(bufferView.ByteLength))
 		} else if subtreeJson.TileAvailability.Constant != nil {
 			subtree.TileAvailabilityConstant = *subtreeJson.TileAvailability.Constant
 		}
@@ -89,7 +89,7 @@ func ReadSubtreeFromReader(reader io.Reader) (*Subtree, error) {
 		contentAvailability := subtreeJson.ContentAvailability[0]
 		if contentAvailability.Bitstream != nil {
 			bufferView := subtreeJson.BufferViews[*contentAvailability.Bitstream]
-			subtree.ContentAvailability = Read(subtree.SubtreeBinary, int(bufferView.ByteOffset), int(bufferView.ByteLength))
+			subtree.ContentAvailability = ReadBitArray(subtree.SubtreeBinary, int(bufferView.ByteOffset), int(bufferView.ByteLength))
 		} else if contentAvailability.Constant != nil {
 			subtree.ContentAvailabilityConstant = *contentAvailability.Constant
 		}
@@ -99,7 +99,7 @@ func ReadSubtreeFromReader(reader io.Reader) (*Subtree, error) {
 	if subtreeJson.ChildSubtreeAvailability != nil {
 		if subtreeJson.ChildSubtreeAvailability.Bitstream != nil {
 			bufferView := subtreeJson.BufferViews[*subtreeJson.ChildSubtreeAvailability.Bitstream]
-			subtree.ChildSubtreeAvailability = Read(subtree.SubtreeBinary, int(bufferView.ByteOffset), int(bufferView.ByteLength))
+			subtree.ChildSubtreeAvailability = ReadBitArray(subtree.SubtreeBinary, int(bufferView.ByteOffset), int(bufferView.ByteLength))
 		} else if subtreeJson.ChildSubtreeAvailability.Constant != nil {
 			// Handle constant value for child subtree availability
 			subtree.ChildSubtreeAvailabilityConstant = *subtreeJson.ChildSubtreeAvailability.Constant

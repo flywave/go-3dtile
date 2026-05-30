@@ -265,7 +265,7 @@ func (m *Geom) SetFeatureTable(view GeomFeatureTableView) {
 
 	if view.Spheres != nil {
 		m.FeatureTable.Header[GEOM_PROP_SPHERES] = BinaryBodyReference{ComponentType: COMPONENT_TYPE_FLOAT, ContainerType: CONTAINER_TYPE_SCALAR}
-		raw := make([]float32, len(view.Spheres)*6)
+		raw := make([]float32, len(view.Spheres)*4)
 		for i := 0; i < len(view.Spheres); i++ {
 			copy(raw[i*4:i*4+4], view.Spheres[i][:])
 		}
@@ -365,7 +365,7 @@ func (m *Geom) Read(reader io.ReadSeeker) error {
 		return err
 	}
 
-	m.FeatureTable.decode = PntsFeatureTableDecode
+	m.FeatureTable.decode = GeomFeatureTableDecode
 
 	if err := m.FeatureTable.Read(reader, m.GetHeader()); err != nil {
 		return err

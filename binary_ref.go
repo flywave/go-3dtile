@@ -75,7 +75,7 @@ type BinaryBodyReference struct {
 
 func (r *BinaryBodyReference) GetMap() map[string]interface{} {
 	ret := make(map[string]interface{})
-	ret[REF_PROP_BYTE_OFFSET] = r.ByteOffset
+	ret[REF_PROP_BYTE_OFFSET] = float64(r.ByteOffset)
 	if len(r.ComponentType) > 0 {
 		ret[REF_PROP_COMPONENT_TYPE] = r.ComponentType
 	}
@@ -154,7 +154,7 @@ func (b *BinaryBodySizeHelper) finished() {
 func maxBatchId(array []int64) int64 {
 	maxElement := array[0]
 	for _, element := range array {
-		if maxElement > element {
+		if element > maxElement {
 			maxElement = element
 		}
 	}

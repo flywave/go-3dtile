@@ -9,11 +9,11 @@ func TestContentToTileAvailability_GetTileAvailabilityLevels(t *testing.T) {
 	contentLevels := make(AvailabilityLevels, 0)
 
 	// 添加级别0
-	level0 := NewAvailabilityLevel(0)
+	level0 := NewAvailabilityLevel(0, Quadtree)
 	contentLevels = append(contentLevels, level0)
 
 	// 添加级别1
-	level1 := NewAvailabilityLevel(1)
+	level1 := NewAvailabilityLevel(1, Quadtree)
 	contentLevels = append(contentLevels, level1)
 
 	// 在级别1的内容中设置一些值
@@ -63,13 +63,13 @@ func TestContentToTileAvailability_GetTileAvailabilityLevels(t *testing.T) {
 func TestContentToTileAvailability_GetTileAvailabilityLevels_SingleLevel(t *testing.T) {
 	// 创建只有级别0的测试用例
 	contentLevels := make(AvailabilityLevels, 0)
-	level0 := NewAvailabilityLevel(0)
-	contentLevels = append(contentLevels, level0)
+	level0 := NewAvailabilityLevel(0, Quadtree)
 
 	// 在级别0的内容中设置值
 	if level0.BitArray2D != nil {
 		level0.BitArray2D.Set(0, 0, true)
 	}
+	contentLevels = append(contentLevels, level0)
 
 	// 计算瓦片可用性级别
 	tileLevels := GetTileAvailabilityLevels(contentLevels)

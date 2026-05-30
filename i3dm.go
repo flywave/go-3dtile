@@ -187,7 +187,7 @@ func I3dmFeatureTableEncode(header map[string]interface{}, data map[string]inter
 		dt := t.([][2]uint16)
 		binary.Write(buf, littleEndian, dt)
 		header[I3DM_PROP_NORMAL_UP_OCT32P] = BinaryBodyReference{ByteOffset: uint32(offset), ComponentType: COMPONENT_TYPE_UNSIGNED_SHORT, ContainerType: CONTAINER_TYPE_VEC2}
-		offset += (len(dt) * 3 * 2)
+		offset += (len(dt) * 2 * 2)
 		pad := createPaddingBytes([]byte{}, uint32(offset), 4, 0x20)
 		binary.Write(buf, littleEndian, pad)
 		offset += len(pad)
@@ -197,7 +197,7 @@ func I3dmFeatureTableEncode(header map[string]interface{}, data map[string]inter
 		dt := t.([][2]uint16)
 		binary.Write(buf, littleEndian, dt)
 		header[I3DM_PROP_NORMAL_RIGHT_OCT32P] = BinaryBodyReference{ByteOffset: uint32(offset), ComponentType: COMPONENT_TYPE_UNSIGNED_SHORT, ContainerType: CONTAINER_TYPE_VEC2}
-		offset += (len(dt) * 3 * 2)
+		offset += (len(dt) * 2 * 2)
 		pad := createPaddingBytes([]byte{}, uint32(offset), 4, 0x20)
 		binary.Write(buf, littleEndian, pad)
 		offset += len(pad)
@@ -282,12 +282,12 @@ func (m *I3dm) SetFeatureTable(view I3dmFeatureTableView) {
 	}
 
 	if view.NormalUpOCT16P != nil {
-		m.FeatureTable.Header[I3DM_PROP_NORMAL_UP_OCT32P] = BinaryBodyReference{ComponentType: COMPONENT_TYPE_UNSIGNED_SHORT, ContainerType: CONTAINER_TYPE_VEC3}
+		m.FeatureTable.Header[I3DM_PROP_NORMAL_UP_OCT32P] = BinaryBodyReference{ComponentType: COMPONENT_TYPE_UNSIGNED_SHORT, ContainerType: CONTAINER_TYPE_VEC2}
 		m.FeatureTable.Data[I3DM_PROP_NORMAL_UP_OCT32P] = view.NormalUpOCT16P
 	}
 
 	if view.NormalRightOCT16P != nil {
-		m.FeatureTable.Header[I3DM_PROP_NORMAL_RIGHT_OCT32P] = BinaryBodyReference{ComponentType: COMPONENT_TYPE_UNSIGNED_SHORT, ContainerType: CONTAINER_TYPE_VEC3}
+		m.FeatureTable.Header[I3DM_PROP_NORMAL_RIGHT_OCT32P] = BinaryBodyReference{ComponentType: COMPONENT_TYPE_UNSIGNED_SHORT, ContainerType: CONTAINER_TYPE_VEC2}
 		m.FeatureTable.Data[I3DM_PROP_NORMAL_RIGHT_OCT32P] = view.NormalRightOCT16P
 	}
 
@@ -458,11 +458,14 @@ func (m *I3dm) Read(reader io.ReadSeeker) error {
 
 	switch m.Header.GltfFormat {
 	case 0:
-		var uri []byte
-		if _, err := io.ReadAtLeast(reader, uri, 0); err != nil {
-			return err
+		remaining := int64(m.Header.ByteLength) - m.Header.CalcSize() - int64(m.Header.FeatureTableJSONByteLength+m.Header.FeatureTableBinaryByteLength+m.Header.BatchTableJSONByteLength+m.Header.BatchTableBinaryByteLength)
+		if remaining > 0 {
+			uri := make([]byte, remaining)
+			if _, err := io.ReadFull(reader, uri); err != nil {
+				return err
+			}
+			m.GltfUri = string(uri)
 		}
-		m.GltfUri = string(uri)
 	case 1:
 		var err1 error
 		if m.Model, err1 = loadGltfFromByte(reader); err1 != nil {

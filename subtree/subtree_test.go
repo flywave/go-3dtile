@@ -288,7 +288,7 @@ func TestAvailabilityGetLevel(t *testing.T) {
 
 func TestAvailabilityLevel(t *testing.T) {
 	// Test NewAvailabilityLevel
-	al := NewAvailabilityLevel(1)
+	al := NewAvailabilityLevel(1, Quadtree)
 	if al == nil {
 		t.Fatal("Expected non-nil AvailabilityLevel")
 	}
@@ -312,8 +312,8 @@ func TestAvailabilityLevel(t *testing.T) {
 
 func TestAvailabilityLevelsToMortonIndex(t *testing.T) {
 	// Create test levels
-	level0 := NewAvailabilityLevel(0)
-	level1 := NewAvailabilityLevel(1)
+	level0 := NewAvailabilityLevel(0, Quadtree)
+	level1 := NewAvailabilityLevel(1, Quadtree)
 
 	// Set some values
 	level0.BitArray2D.Set(0, 0, true)

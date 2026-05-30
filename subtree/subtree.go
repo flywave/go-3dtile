@@ -292,10 +292,11 @@ type AvailabilityLevel struct {
 	height     int
 }
 
-// NewAvailabilityLevel creates a new AvailabilityLevel
-func NewAvailabilityLevel(level int) *AvailabilityLevel {
-	width := int(math.Sqrt(math.Pow(4, float64(level))))
-	height := int(math.Sqrt(math.Pow(4, float64(level))))
+// NewAvailabilityLevel creates a new AvailabilityLevel for the given subdivision scheme
+func NewAvailabilityLevel(level int, scheme ImplicitSubdivisionScheme) *AvailabilityLevel {
+	dim := 1 << uint(level) // 2^level tiles per dimension: sqrt(4^level) for quadtree, cbrt(8^level) for octree
+	width := dim
+	height := dim
 
 	ba, _ := NewBitArray2D(width, height)
 
@@ -314,6 +315,9 @@ func (al *AvailabilityLevel) ToMortonIndex() string {
 	}
 
 	s := make([]byte, al.width*al.height)
+	for i := range s {
+		s[i] = '0'
+	}
 	mo := MortonOrder{}
 
 	for x := 0; x < al.width; x++ {
@@ -322,8 +326,6 @@ func (al *AvailabilityLevel) ToMortonIndex() string {
 			if index < uint(len(s)) {
 				if al.BitArray2D.Get(x, y) {
 					s[index] = '1'
-				} else {
-					s[index] = '0'
 				}
 			}
 		}
@@ -374,7 +376,7 @@ func GetTileAvailabilityLevels(contentAvailabilityLevels AvailabilityLevels) Ava
 
 	// 为每个级别创建新的 AvailabilityLevel
 	for i := 0; i <= maxLevelNumber; i++ {
-		tileAvailabilityLevels = append(tileAvailabilityLevels, NewAvailabilityLevel(i))
+		tileAvailabilityLevels = append(tileAvailabilityLevels, NewAvailabilityLevel(i, Quadtree))
 	}
 
 	// 特殊情况：如果最大级别为0且内容可用性在(0,0)位置为true

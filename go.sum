@@ -1,5 +1,3 @@
-github.com/flywave/gltf v0.20.4-0.20250703101259-1edf290bd287 h1:3gzJr3GhhgS0JZivywpuEZwwvKx9UBXRQARyEQXFMeI=
-github.com/flywave/gltf v0.20.4-0.20250703101259-1edf290bd287/go.mod h1:NAtCKT3eS5RB07fJVPqNp1MOhJeudSks08rAgkjIMnc=
 github.com/flywave/go3d v0.0.0-20250619003741-cab1a6ea6de6 h1:ARzvWQkEo1wmn0VTPN/qyrbQKcCRvbT3ACqn3rIb1p4=
 github.com/flywave/go3d v0.0.0-20250619003741-cab1a6ea6de6/go.mod h1:bvblxPT+cF0zgDi71CuusPPWCwqU0SikE9ySl2NzeQw=
 github.com/go-test/deep v1.0.1 h1:UQhStjbkDClarlmv0am7OXXO4/GaPdCGiUiMTvi28sg=

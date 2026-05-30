@@ -20,10 +20,10 @@ type FeatureTable struct {
 func (t *FeatureTable) readJSONHeader(data io.ReadSeeker, jsonLength int) error {
 	jdata := make([]byte, jsonLength)
 	_, err := data.Read(jdata)
-	dec := json.NewDecoder(bytes.NewBuffer(jdata))
 	if err != nil {
-		return nil
+		return err
 	}
+	dec := json.NewDecoder(bytes.NewBuffer(jdata))
 	t.Header = make(map[string]interface{})
 	if err := dec.Decode(&t.Header); err != nil {
 		return err
@@ -89,6 +89,9 @@ func (h *FeatureTable) readData(reader io.ReadSeeker, buffLength int) error {
 }
 
 func (h *FeatureTable) writeData(wr io.Writer) (int, error) {
+	if h.encode == nil {
+		return 0, nil
+	}
 	buff := h.encode(h.Header, h.Data)
 	if buff != nil {
 		n, err := wr.Write(buff)

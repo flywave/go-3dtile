@@ -155,7 +155,7 @@ func VctrFeatureTableDecode(header map[string]interface{}, buff []byte) map[stri
 		ret[VCTR_PROP_POLYLINE_BATCH_IDS] = getUnsignedShortBatchIDs(header, buff, VCTR_PROP_POLYLINE_BATCH_IDS, int(polylinesLength))
 		ret[VCTR_PROP_POLYLINE_COUNTS] = getUnsignedIntArrayFeatureValue(header, buff, VCTR_PROP_POLYLINE_COUNTS, int(polylinesLength))
 		ret[VCTR_PROP_POLYLINE_COUNT] = getUnsignedIntArrayFeatureValue(header, buff, VCTR_PROP_POLYLINE_COUNT, int(polylinesLength))
-		ret[VCTR_PROP_POLYLINE_WIDTHS] = getUnsignedShortArrayFeatureValue(header, buff, VCTR_PROP_POLYLINE_WIDTHS, int(polygonsLength))
+		ret[VCTR_PROP_POLYLINE_WIDTHS] = getUnsignedShortArrayFeatureValue(header, buff, VCTR_PROP_POLYLINE_WIDTHS, int(polylinesLength))
 	}
 
 	if polygonsLength > 0 {
@@ -357,9 +357,9 @@ func (m *VctrPolylines) CalcSize(header Header) uint32 {
 
 func (m *VctrPolylines) Read(reader io.ReadSeeker, header Header) error {
 	ch := header.(*VctrHeader)
-	us := make([]uint16, int(ch.GetPolylinePositionsByteLength()/2/4))
-	vs := make([]uint16, int(ch.GetPolylinePositionsByteLength()/2/4))
-	hs := make([]uint16, int(ch.GetPolylinePositionsByteLength()/2/4))
+	us := make([]uint16, int(ch.GetPolylinePositionsByteLength()/2/3))
+	vs := make([]uint16, int(ch.GetPolylinePositionsByteLength()/2/3))
+	hs := make([]uint16, int(ch.GetPolylinePositionsByteLength()/2/3))
 
 	err := binary.Read(reader, littleEndian, us)
 	if err != nil {
@@ -413,7 +413,7 @@ func (m *VctrPoints) decode(us, vs, hs []uint16) {
 
 func (m *VctrPoints) CalcSize(header Header) uint32 {
 	ct := uint32(len(m.p) * 3 * 2)
-	header.(*VctrHeader).PolylinePositionsByteLength = ct
+	header.(*VctrHeader).PointPositionsByteLength = ct
 	return ct
 
 }
@@ -538,24 +538,61 @@ func (m *Vctr) SetFeatureTable(view VctrFeatureTableView) {
 func (m *Vctr) GetFeatureTableView() VctrFeatureTableView {
 	ret := VctrFeatureTableView{}
 
-	if t := m.FeatureTable.Data[VCTR_PROP_POLYGONS_LENGTH]; t != nil {
-		ret.PolygonsLength = t.(uint32)
+	if t := m.FeatureTable.Header[VCTR_PROP_POLYGONS_LENGTH]; t != nil {
+		switch v := t.(type) {
+		case int32:
+			ret.PolygonsLength = uint32(v)
+		case uint32:
+			ret.PolygonsLength = v
+		case float64:
+			ret.PolygonsLength = uint32(v)
+		}
 	}
 
-	if t := m.FeatureTable.Data[VCTR_PROP_POLYLINES_LENGTH]; t != nil {
-		ret.PolylinesLength = t.(uint32)
+	if t := m.FeatureTable.Header[VCTR_PROP_POLYLINES_LENGTH]; t != nil {
+		switch v := t.(type) {
+		case int32:
+			ret.PolylinesLength = uint32(v)
+		case uint32:
+			ret.PolylinesLength = v
+		case float64:
+			ret.PolylinesLength = uint32(v)
+		}
 	}
 
-	if t := m.FeatureTable.Data[VCTR_PROP_POINTS_LENGTH]; t != nil {
-		ret.PointsLength = t.(uint32)
+	if t := m.FeatureTable.Header[VCTR_PROP_POINTS_LENGTH]; t != nil {
+		switch v := t.(type) {
+		case int32:
+			ret.PointsLength = uint32(v)
+		case uint32:
+			ret.PointsLength = v
+		case float64:
+			ret.PointsLength = uint32(v)
+		}
 	}
 
-	if t := m.FeatureTable.Data[VCTR_PROP_RTC_CENTER]; t != nil {
-		copy(ret.RtcCenter[:], t.([]float64))
+	if t := m.FeatureTable.Header[VCTR_PROP_RTC_CENTER]; t != nil {
+		switch v := t.(type) {
+		case []float64:
+			copy(ret.RtcCenter[:], v)
+		case [3]float64:
+			ret.RtcCenter = v
+		}
 	}
 
-	if t := m.FeatureTable.Data[VCTR_PROP_REGION]; t != nil {
-		copy(ret.Region[:], t.([]float32))
+	if t := m.FeatureTable.Header[VCTR_PROP_REGION]; t != nil {
+		switch v := t.(type) {
+		case []float32:
+			r := [6]float32{}
+			copy(r[:], v)
+			ret.Region = &r
+		case []float64:
+			r := [6]float32{}
+			for i := 0; i < 6 && i < len(v); i++ {
+				r[i] = float32(v[i])
+			}
+			ret.Region = &r
+		}
 	}
 
 	if t := m.FeatureTable.Data[VCTR_PROP_POINT_BATCH_IDS]; t != nil {
@@ -625,23 +662,23 @@ func (m *Vctr) GetPoints() VctrPoints {
 	return m.Points
 }
 
-func (m *Vctr) CalcSize() uint32 {
-	si := uint32(m.Header.CalcSize() + m.FeatureTable.CalcSize(m.GetHeader()) + m.BatchTable.CalcSize(m.GetHeader()))
+func (m *Vctr) CalcSize() int64 {
+	si := m.Header.CalcSize() + m.FeatureTable.CalcSize(m.GetHeader()) + m.BatchTable.CalcSize(m.GetHeader())
 
 	if m.Indices.p != nil {
-		si += m.Indices.CalcSize(m.GetHeader())
+		si += int64(m.Indices.CalcSize(m.GetHeader()))
 	}
 
 	if m.Polygons.p != nil {
-		si += m.Polygons.CalcSize(m.GetHeader())
+		si += int64(m.Polygons.CalcSize(m.GetHeader()))
 	}
 
 	if m.Polylines.p != nil {
-		si += m.Polylines.CalcSize(m.GetHeader())
+		si += int64(m.Polylines.CalcSize(m.GetHeader()))
 	}
 
 	if m.Points.p != nil {
-		si += m.Points.CalcSize(m.GetHeader())
+		si += int64(m.Points.CalcSize(m.GetHeader()))
 	}
 	return si
 }
@@ -687,6 +724,7 @@ func (m *Vctr) Write(writer io.Writer) error {
 	si := m.CalcSize()
 
 	m.Header.ByteLength = uint32(si)
+
 
 	err := binary.Write(writer, littleEndian, m.Header)
 

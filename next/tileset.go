@@ -134,10 +134,18 @@ type GroupMetadata struct {
 	Extra      json.RawMessage            `json:"extra,omitempty"`
 }
 
+// Property describes the minimum and maximum values for a tile property
+type Property struct {
+	Minimum    *float64                   `json:"minimum,omitempty"`
+	Maximum    *float64                   `json:"maximum,omitempty"`
+	Extensions map[string]json.RawMessage `json:"extensions,omitempty"`
+	Extra      json.RawMessage            `json:"extra,omitempty"`
+}
+
 // Tileset represents the root tileset object
 type Tileset struct {
 	Asset              Asset                      `json:"asset"`
-	Properties         map[string]json.RawMessage `json:"properties,omitempty"`
+	Properties         map[string]Property        `json:"properties,omitempty"`
 	Schema             *ext_gltf.Schema           `json:"schema,omitempty"`
 	SchemaURI          *string                    `json:"schemaUri,omitempty"`
 	Statistics         *Statistics                `json:"statistics,omitempty"`
@@ -168,8 +176,8 @@ type StatisticsClass struct {
 
 // StatisticsProperty contains statistics about a property
 type StatisticsProperty struct {
-	Min               *float64                   `json:"min,omitempty"`
-	Max               *float64                   `json:"max,omitempty"`
+	Minimum           *float64                   `json:"minimum,omitempty"`
+	Maximum           *float64                   `json:"maximum,omitempty"`
 	Mean              *float64                   `json:"mean,omitempty"`
 	Median            *float64                   `json:"median,omitempty"`
 	StandardDeviation *float64                   `json:"standardDeviation,omitempty"`

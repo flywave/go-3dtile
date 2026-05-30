@@ -54,7 +54,7 @@ func GetMortonIndices(tiles []Tile) (tileAvailability string, contentAvailabilit
 		}
 
 		// Create availability level
-		availabilityLevel := NewAvailabilityLevel(z)
+		availabilityLevel := NewAvailabilityLevel(z, Quadtree)
 
 		// Set bits for available tiles
 		for _, levelTile := range levelTiles {
