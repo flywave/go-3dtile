@@ -452,6 +452,73 @@ func getBatchTableValuesFromRef(ref *BinaryBodyReference, buff []byte, propName 
 	return nil
 }
 
+// getBatchTableAllValuesFromRef 解码二进制批表属性的全部 batch 值。
+// 与 getBatchTableValuesFromRef（第四个参数是单个批索引、只取该索引一个 batch 的值）不同，
+// batchCount 是批数量：把 [offset, offset+batchCount*containerSize*compSize) 整段解码为
+// 组件类型的完整切片；批 i 的分量位于下标 [i*containerSize, (i+1)*containerSize)（批主序平铺），
+// 如 FLOAT VEC3 返回长度 3*batchCount 的 []float32。越界或未知类型返回 nil（不 panic）。
+func getBatchTableAllValuesFromRef(ref *BinaryBodyReference, buff []byte, batchCount int) interface{} {
+	if ref == nil || batchCount <= 0 {
+		return nil
+	}
+	compSize := ComponentTypeSize(ref.ComponentType)
+	if compSize <= 0 {
+		return nil
+	}
+	containerSize := ContainerTypeSize(ref.ContainerType)
+	if containerSize <= 0 {
+		containerSize = 1 // 批表 type 缺省视为 SCALAR
+	}
+	offset := int(ref.ByteOffset)
+	total := batchCount * containerSize
+	if offset < 0 || offset+total*compSize > len(buff) {
+		return nil
+	}
+	switch ref.ComponentType {
+	case COMPONENT_TYPE_BYTE, COMPONENT_TYPE_UNSIGNED_BYTE:
+		out := make([]byte, total)
+		copy(out, buff[offset:offset+total])
+		return out
+	case COMPONENT_TYPE_SHORT:
+		out := make([]int16, total)
+		for i := range out {
+			out[i] = int16(littleEndian.Uint16(buff[offset+2*i : offset+2*i+2]))
+		}
+		return out
+	case COMPONENT_TYPE_UNSIGNED_SHORT:
+		out := make([]uint16, total)
+		for i := range out {
+			out[i] = littleEndian.Uint16(buff[offset+2*i : offset+2*i+2])
+		}
+		return out
+	case COMPONENT_TYPE_INT:
+		out := make([]int32, total)
+		for i := range out {
+			out[i] = int32(littleEndian.Uint32(buff[offset+4*i : offset+4*i+4]))
+		}
+		return out
+	case COMPONENT_TYPE_UNSIGNED_INT:
+		out := make([]uint32, total)
+		for i := range out {
+			out[i] = littleEndian.Uint32(buff[offset+4*i : offset+4*i+4])
+		}
+		return out
+	case COMPONENT_TYPE_FLOAT:
+		out := make([]float32, total)
+		for i := range out {
+			out[i] = math.Float32frombits(littleEndian.Uint32(buff[offset+4*i : offset+4*i+4]))
+		}
+		return out
+	case COMPONENT_TYPE_DOUBLE:
+		out := make([]float64, total)
+		for i := range out {
+			out[i] = math.Float64frombits(littleEndian.Uint64(buff[offset+8*i : offset+8*i+8]))
+		}
+		return out
+	}
+	return nil
+}
+
 func getBatchTableBinaryByte(ref *BinaryBodyReference, data interface{}) []byte {
 	if ref != nil {
 		switch ref.ComponentType {
@@ -480,7 +547,7 @@ func getBatchTableBinaryByte(ref *BinaryBodyReference, data interface{}) []byte 
 				return ret
 			case []int16:
 				ret := make([]byte, 2*len(d))
-				binary.Read(bytes.NewBuffer(ret), littleEndian, d)
+				binary.Write(bytes.NewBuffer(ret[:0]), littleEndian, d)
 				return ret
 			}
 		case COMPONENT_TYPE_UNSIGNED_SHORT:
@@ -491,7 +558,7 @@ func getBatchTableBinaryByte(ref *BinaryBodyReference, data interface{}) []byte 
 				return ret
 			case []uint16:
 				ret := make([]byte, 2*len(d))
-				binary.Read(bytes.NewBuffer(ret), littleEndian, d)
+				binary.Write(bytes.NewBuffer(ret[:0]), littleEndian, d)
 				return ret
 			}
 		case COMPONENT_TYPE_INT:
@@ -502,7 +569,7 @@ func getBatchTableBinaryByte(ref *BinaryBodyReference, data interface{}) []byte 
 				return ret
 			case []int32:
 				ret := make([]byte, 4*len(d))
-				binary.Read(bytes.NewBuffer(ret), littleEndian, d)
+				binary.Write(bytes.NewBuffer(ret[:0]), littleEndian, d)
 				return ret
 			}
 		case COMPONENT_TYPE_UNSIGNED_INT:
@@ -513,7 +580,7 @@ func getBatchTableBinaryByte(ref *BinaryBodyReference, data interface{}) []byte 
 				return ret
 			case []uint32:
 				ret := make([]byte, 4*len(d))
-				binary.Read(bytes.NewBuffer(ret), littleEndian, d)
+				binary.Write(bytes.NewBuffer(ret[:0]), littleEndian, d)
 				return ret
 			}
 		case COMPONENT_TYPE_FLOAT:
@@ -524,7 +591,7 @@ func getBatchTableBinaryByte(ref *BinaryBodyReference, data interface{}) []byte 
 				return ret
 			case []float32:
 				ret := make([]byte, 4*len(d))
-				binary.Read(bytes.NewBuffer(ret), littleEndian, d)
+				binary.Write(bytes.NewBuffer(ret[:0]), littleEndian, d)
 				return ret
 			}
 		case COMPONENT_TYPE_DOUBLE:
@@ -535,7 +602,7 @@ func getBatchTableBinaryByte(ref *BinaryBodyReference, data interface{}) []byte 
 				return ret
 			case []float64:
 				ret := make([]byte, 8*len(d))
-				binary.Read(bytes.NewBuffer(ret), littleEndian, d)
+				binary.Write(bytes.NewBuffer(ret[:0]), littleEndian, d)
 				return ret
 			}
 		}

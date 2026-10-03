@@ -60,6 +60,91 @@ func TestBatchTableGetProperty(t *testing.T) {
 	}
 }
 
+func TestBatchTableWriteReadRoundTripAllBatches(t *testing.T) {
+	const batchCount = 3
+
+	classification := []uint8{3, 7, 9}
+	colors := []float32{
+		1.5, 2.5, 3.5,
+		4.5, 5.5, 6.5,
+		7.5, 8.5, 9.5,
+	}
+
+	src := &BatchTable{
+		Header: map[string]interface{}{
+			"CLASSIFICATION": BinaryBodyReference{
+				ComponentType: COMPONENT_TYPE_UNSIGNED_BYTE,
+				ContainerType: CONTAINER_TYPE_SCALAR,
+			},
+			"COLOR": BinaryBodyReference{
+				ComponentType: COMPONENT_TYPE_FLOAT,
+				ContainerType: CONTAINER_TYPE_VEC3,
+			},
+		},
+		Data: map[string]interface{}{
+			"CLASSIFICATION": classification,
+			"COLOR":          colors,
+		},
+	}
+
+	h := &PntsHeader{}
+	var buf bytes.Buffer
+	if err := src.Write(&buf, h); err != nil {
+		t.Fatal("Write failed:", err)
+	}
+	if h.GetBatchTableJSONByteLength() == 0 || h.GetBatchTableBinaryByteLength() == 0 {
+		t.Fatalf("Write did not set batch table lengths: json=%d binary=%d",
+			h.GetBatchTableJSONByteLength(), h.GetBatchTableBinaryByteLength())
+	}
+	wantClassification := []uint8{3, 7, 9}
+	wantColors := []float32{1.5, 2.5, 3.5, 4.5, 5.5, 6.5, 7.5, 8.5, 9.5}
+	for i := range classification {
+		if classification[i] != wantClassification[i] {
+			t.Fatalf("Write mutated Data[CLASSIFICATION]: got %v, want %v", classification, wantClassification)
+		}
+	}
+	for i := range colors {
+		if colors[i] != wantColors[i] {
+			t.Fatalf("Write mutated Data[COLOR]: got %v, want %v", colors, wantColors)
+		}
+	}
+
+	dst := &BatchTable{}
+	if err := dst.Read(bytes.NewReader(buf.Bytes()), h, batchCount); err != nil {
+		t.Fatal("Read failed:", err)
+	}
+
+	got, ok := dst.Data["CLASSIFICATION"].([]uint8)
+	if !ok {
+		t.Fatalf("CLASSIFICATION = %T (%v), want []uint8 covering all batches",
+			dst.Data["CLASSIFICATION"], dst.Data["CLASSIFICATION"])
+	}
+	if len(got) != batchCount {
+		t.Fatalf("CLASSIFICATION len = %d, want %d (one value per batch)", len(got), batchCount)
+	}
+	for i, want := range wantClassification {
+		if got[i] != want {
+			t.Errorf("CLASSIFICATION[%d] = %d, want %d", i, got[i], want)
+		}
+	}
+
+	gotF, ok := dst.Data["COLOR"].([]float32)
+	if !ok {
+		t.Fatalf("COLOR = %T (%v), want []float32 covering all batches",
+			dst.Data["COLOR"], dst.Data["COLOR"])
+	}
+	if len(gotF) != batchCount*3 {
+		t.Fatalf("COLOR len = %d, want %d (3 components × %d batches)", len(gotF), batchCount*3, batchCount)
+	}
+	for i := 0; i < batchCount; i++ {
+		for c := 0; c < 3; c++ {
+			if gotF[i*3+c] != wantColors[i*3+c] {
+				t.Errorf("COLOR batch %d component %d = %v, want %v", i, c, gotF[i*3+c], wantColors[i*3+c])
+			}
+		}
+	}
+}
+
 func TestTransformBinaryBodyReference(t *testing.T) {
 	m := map[string]interface{}{
 		"prop": map[string]interface{}{

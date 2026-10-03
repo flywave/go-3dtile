@@ -148,7 +148,7 @@ func (h *BatchTable) Read(reader io.ReadSeeker, header Header, batchLength int) 
 	for k, v := range h.Header {
 		switch t := v.(type) {
 		case BinaryBodyReference:
-			h.Data[k] = getBatchTableValuesFromRef(&t, batchdata, k, batchLength)
+			h.Data[k] = getBatchTableAllValuesFromRef(&t, batchdata, batchLength)
 		case []interface{}:
 			h.Data[k] = t
 		default:
